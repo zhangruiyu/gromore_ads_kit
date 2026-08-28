@@ -1,0 +1,81 @@
+group = "com.zhecent.gromore_ads_kit"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "2.2.20"
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle"  //穿山甲融合SDK依赖
+        }
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        // GroMore自动拉取Adapter AAR的插件脚本。
+        classpath 'com.pangle.cn:mediation-auto-adapter:1.0.3'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle"  //穿山甲融合SDK依赖
+        }
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "com.zhecent.gromore_ads_kit"
+
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        minSdk = 24
+    }
+
+    dependencies {
+        implementation 'androidx.appcompat:appcompat:1.7.1'
+        implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+        implementation "com.pangle.cn:mediation-sdk:7.7.1.6"
+
+        // 宿主 Debug 工程引入官方 tools-release.aar 后，用于加载测试工具图片。
+        implementation 'com.github.bumptech.glide:glide:4.16.0'
+
+        testImplementation("org.jetbrains.kotlin:kotlin-test")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+}
