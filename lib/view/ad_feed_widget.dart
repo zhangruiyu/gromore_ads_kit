@@ -3,6 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ohos_platform_view.dart';
+
 /// 信息流广告Widget
 class AdFeedWidget extends StatefulWidget {
   /// 广告位ID
@@ -84,6 +86,17 @@ class _AdFeedWidgetState extends State<AdFeedWidget> {
               layoutDirection: TextDirection.ltr,
               creationParams: creationParams,
               creationParamsCodec: const StandardMessageCodec(),
+              onPlatformViewCreated: _onPlatformViewCreated,
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<OneSequenceGestureRecognizer>(
+                  () => EagerGestureRecognizer(),
+                ),
+              },
+            )
+          : isGromoreOhosPlatform
+          ? buildGromoreOhosPlatformView(
+              viewType: viewType,
+              creationParams: creationParams,
               onPlatformViewCreated: _onPlatformViewCreated,
               gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                 Factory<OneSequenceGestureRecognizer>(

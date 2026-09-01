@@ -13,6 +13,9 @@ class MockGromoreAdsKitPlatform
 
   final StreamController<Map<String, dynamic>> _controller =
       StreamController<Map<String, dynamic>>.broadcast();
+  Map<String, dynamic>? lastInitParams;
+  Map<String, dynamic>? lastSplashParams;
+  Map<String, dynamic>? lastBannerParams;
 
   @override
   Stream<Map<String, dynamic>> get adEventStream => _controller.stream;
@@ -24,7 +27,10 @@ class MockGromoreAdsKitPlatform
   Future<bool> requestPermissionIfNecessary() => Future.value(true);
 
   @override
-  Future<bool> initAd(Map<String, dynamic> params) => Future.value(true);
+  Future<bool> initAd(Map<String, dynamic> params) {
+    lastInitParams = params;
+    return Future.value(true);
+  }
 
   @override
   Future<bool> isReady(Map<String, dynamic> params) => Future.value(true);
@@ -46,7 +52,10 @@ class MockGromoreAdsKitPlatform
   Future<bool> preload(Map<String, dynamic> params) => Future.value(true);
 
   @override
-  Future<bool> showSplashAd(Map<String, dynamic> params) => Future.value(true);
+  Future<bool> showSplashAd(Map<String, dynamic> params) {
+    lastSplashParams = params;
+    return Future.value(true);
+  }
 
   @override
   Future<bool> loadInterstitialAd(Map<String, dynamic> params) =>
@@ -77,7 +86,10 @@ class MockGromoreAdsKitPlatform
   Future<bool> clearDrawFeedAd(List<int> ids) => Future.value(true);
 
   @override
-  Future<bool> loadBannerAd(Map<String, dynamic> params) => Future.value(true);
+  Future<bool> loadBannerAd(Map<String, dynamic> params) {
+    lastBannerParams = params;
+    return Future.value(true);
+  }
 
   @override
   Future<bool> showBannerAd() => Future.value(true);
@@ -139,14 +151,92 @@ void main() {
   test('privacy config only serializes explicitly supplied values', () {
     const privacy = AdPrivacyConfig(
       canUseLocation: false,
+      canUseAppTrackingConsent: true,
+      devOaid: 'harmony_oaid',
       canUseOaid: true,
       customIdfa: 'idfa_from_host',
     );
 
     expect(privacy.toMap(), {
       'canUseLocation': false,
+      'canUseAppTrackingConsent': true,
+      'devOaid': 'harmony_oaid',
       'canUseOaid': true,
       'customIdfa': 'idfa_from_host',
+    });
+  });
+
+  test('initAd forwards HarmonyOS initialization fields', () async {
+    final fakePlatform = MockGromoreAdsKitPlatform();
+    GromoreAdsKitPlatform.instance = fakePlatform;
+
+    expect(
+      await GromoreAdsKit.initAd(
+        'harmony_app_id',
+        useMediation: true,
+        debugMode: true,
+        appName: 'Harmony Demo',
+        allowShowNotify: false,
+      ),
+      isTrue,
+    );
+    expect(fakePlatform.lastInitParams, {
+      'appId': 'harmony_app_id',
+      'useMediation': true,
+      'debugMode': true,
+      'appName': 'Harmony Demo',
+      'allowShowNotify': false,
+    });
+  });
+
+  test('splash request serializes HarmonyOS fallback settings', () async {
+    final fakePlatform = MockGromoreAdsKitPlatform();
+    GromoreAdsKitPlatform.instance = fakePlatform;
+
+    const fallback = SplashAdFallback(
+      adnName: 'pangle',
+      slotId: 'splash_slot',
+      appId: 'pangle_app_id',
+      appKey: 'pangle_app_key',
+    );
+    await GromoreAdsKit.showSplashAd(
+      const SplashAdRequest(
+        posId: 'splash_pos',
+        harmony: SplashAdHarmonyOptions(fallback: fallback),
+      ),
+    );
+
+    expect(fakePlatform.lastSplashParams, {
+      'posId': 'splash_pos',
+      'harmony': {
+        'fallback': {
+          'adnName': 'pangle',
+          'slotId': 'splash_slot',
+          'appId': 'pangle_app_id',
+          'appKey': 'pangle_app_key',
+        },
+      },
+    });
+  });
+
+  test('banner forwards HarmonyOS native render opt-in', () async {
+    final fakePlatform = MockGromoreAdsKitPlatform();
+    GromoreAdsKitPlatform.instance = fakePlatform;
+
+    expect(
+      await GromoreAdsKit.loadBannerAd(
+        'banner_pos',
+        width: 320,
+        height: 100,
+        harmonyNativeRender: true,
+      ),
+      isTrue,
+    );
+    expect(fakePlatform.lastBannerParams, {
+      'posId': 'banner_pos',
+      'width': 320,
+      'height': 100,
+      'harmonyNativeRender': true,
     });
   });
 

@@ -1,0 +1,12 @@
+{
+  "name": "gromore_ads_kit",
+  "version": "1.0.0",
+  "description": "GroMore ads mediation Flutter plugin for HarmonyOS.",
+  "main": "index.ets",
+  "author": "zhangruiyu",
+  "license": "MIT",
+  "dependencies": {
+    "@ohos/flutter_ohos": "file:./har/flutter.har",
+    "@csj/openadsdk": "7.5.3"
+  }
+}

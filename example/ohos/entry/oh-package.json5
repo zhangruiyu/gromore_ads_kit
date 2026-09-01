@@ -1,0 +1,10 @@
+
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "HarmonyOS example entry for gromore_ads_kit.",
+  "main": "",
+  "author": "zhangruiyu",
+  "license": "MIT",
+  "dependencies": {},
+}

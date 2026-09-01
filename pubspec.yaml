@@ -1,8 +1,8 @@
 name: gromore_ads_kit
 description: >-
-  GroMore 广告聚合 Flutter 插件，支持 Android 和 iOS 的开屏、插屏、
-  Banner、激励视频、信息流和 Draw 信息流广告。
-version: 0.3.0
+  GroMore 广告聚合 Flutter 插件，支持 Android、iOS 和 HarmonyOS 的开屏、
+  插屏、Banner、激励视频、信息流和 Draw 信息流广告。
+version: 1.0.0
 homepage: https://github.com/zhangruiyu/gromore_ads_kit
 repository: https://github.com/zhangruiyu/gromore_ads_kit
 issue_tracker: https://github.com/zhangruiyu/gromore_ads_kit/issues
@@ -15,8 +15,8 @@ topics:
   - flutter-plugin
 
 environment:
-  sdk: ^3.11.5
-  flutter: '>=3.41.0'
+  sdk: ^3.11.4
+  flutter: '>=3.41.6'
 
 dependencies:
   flutter:
@@ -35,4 +35,6 @@ flutter:
         package: com.zhecent.gromore_ads_kit
         pluginClass: GromoreAdsKitPlugin
       ios:
+        pluginClass: GromoreAdsKitPlugin
+      ohos:
         pluginClass: GromoreAdsKitPlugin

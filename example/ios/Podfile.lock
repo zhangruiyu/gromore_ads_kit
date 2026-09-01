@@ -1,13 +1,13 @@
 PODS:
-  - Ads-CN/BUAdLive (7.7.0.7)
-  - Ads-CN/BUAdLive-Framework (7.7.0.7):
+  - Ads-CN/BUAdLive (7.7.0.8)
+  - Ads-CN/BUAdLive-Framework (7.7.0.8):
     - Ads-CN/BUAdLive
     - BUTTSDKFramework/LivePull-Lite (= 1.48.2.3-premium)
-  - Ads-CN/BUAdSDK (7.7.0.7)
-  - Ads-CN/CSJMediation (7.7.0.7):
+  - Ads-CN/BUAdSDK (7.7.0.8)
+  - Ads-CN/CSJMediation (7.7.0.8):
     - Ads-CN/BUAdLive-Framework
     - Ads-CN/CSJMediation-Only
-  - Ads-CN/CSJMediation-Only (7.7.0.7):
+  - Ads-CN/CSJMediation-Only (7.7.0.8):
     - Ads-CN/BUAdSDK
   - BUTTSDKFramework/Core (1.48.2.3-premium)
   - BUTTSDKFramework/LiveBase (1.48.2.3-premium):
@@ -41,8 +41,8 @@ PODS:
   - BUTTSDKFramework/TTFFmpeg/LiveLite (1.48.2.3-premium)
   - BUTTSDKFramework/VolcLog (1.48.2.3-premium)
   - Flutter (1.0.0)
-  - gromore_ads_kit (0.3.0):
-    - Ads-CN/CSJMediation (= 7.7.0.7)
+  - gromore_ads_kit (1.0.0):
+    - Ads-CN/CSJMediation (= 7.7.0.8)
     - Flutter
   - integration_test (0.0.1):
     - Flutter
@@ -66,10 +66,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  Ads-CN: 371e2b74beeb100c70daae4e7a7823858cb81e7c
+  Ads-CN: 2ab903d5dfb9d664dd2d5349c57c8e6eaecbdcec
   BUTTSDKFramework: 34f8f8d541da07e79e9c479eb71336d1e4d90fdd
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  gromore_ads_kit: b2dfa7e9219eccaa56f4bd4b3b3369be7284a4e4
+  gromore_ads_kit: d8016ff6f8de2eccc9cd7fb2a0d218912ac2a2fc
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
 
 PODFILE CHECKSUM: f8c2dcdfb50bb67645580d28a6bf814fca30bdec

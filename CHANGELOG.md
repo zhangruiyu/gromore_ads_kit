@@ -1,3 +1,23 @@
+## 1.0.0
+
+* 新增 HarmonyOS/OpenHarmony 插件平台，实现 GroMore SDK 初始化、隐私控制、
+  开屏、插全屏、激励视频、Banner、信息流和 Draw。
+* HarmonyOS Feed/Draw 改用官方聚合混出链路，同时支持模板与原生自渲染；
+  内置 ArkUI 布局完成物料展示、唯一组件 ID、计费点击区、dislike 和视频回调。
+* HarmonyOS 直连穿山甲新增原生自渲染 Banner，通过
+  `harmonyNativeRender: true` 显式开启；GroMore 聚合 Banner 仍按官方限制使用模板。
+* HarmonyOS 核心 SDK 使用官方 OHPM `@csj/openadsdk 7.5.3`，补齐仓库、权限、
+  可选快手/广点通 Adapter 和 `runtimeOnly` 接入文档。
+* 新增独立 `gromore_ads_kit_ohos.dart` 入口，在保留普通 Flutter Android/iOS
+  编译兼容性的同时注册 `OhosView`。
+* `initAd` 新增 HarmonyOS `appName`、`allowShowNotify`，`AdPrivacyConfig` 新增
+  OAID 授权与宿主 OAID 字段。
+* 开屏新增 `SplashAdHarmonyOptions` 和 `CSJSplashUserData` 兜底映射。
+* 明确记录 HarmonyOS 1.0.0 的 waterfall 明细、预览工具和真机验收边界。
+* 修正 Flutter/Dart 最低版本约束，兼容标准 Flutter `3.41.6` 自带的
+  Dart `3.11.4`；HarmonyOS 初始化按官方要求使用 `UIAbilityContext`。
+* iOS GroMore 更新到 CocoaPods 官方当前最新版 `Ads-CN 7.7.0.8`。
+
 ## 0.3.0
 
 * 新增跨平台 `AdPrivacyConfig`，完整接入 Android `TTCustomController`、

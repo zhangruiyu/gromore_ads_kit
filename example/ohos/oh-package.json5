@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "gromore_ads_kit_example",
+  "version": "1.0.0",
+  "description": "HarmonyOS example for gromore_ads_kit.",
+  "main": "",
+  "author": "zhangruiyu",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}

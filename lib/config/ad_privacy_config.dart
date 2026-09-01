@@ -7,6 +7,8 @@ class AdPrivacyConfig {
     this.canUseLocation,
     this.latitude,
     this.longitude,
+    this.canUseAppTrackingConsent,
+    this.devOaid,
     this.canUsePhoneState,
     this.imei,
     this.canUseWifiState,
@@ -40,7 +42,7 @@ class AdPrivacyConfig {
          'longitude 必须在 -180 到 180 之间',
        );
 
-  /// 是否允许读取定位。Android、iOS 均支持。
+  /// 是否允许读取定位。Android、iOS、HarmonyOS 均支持。
   final bool? canUseLocation;
 
   /// 自定义纬度；必须与 [longitude] 一起传入。
@@ -49,16 +51,25 @@ class AdPrivacyConfig {
   /// 自定义经度；必须与 [latitude] 一起传入。
   final double? longitude;
 
+  /// 是否允许 HarmonyOS SDK 使用应用跟踪授权状态。
+  ///
+  /// 默认 `false`。宿主申请 `ohos.permission.APP_TRACKING_CONSENT` 后，
+  /// 应按真实授权结果传入。
+  final bool? canUseAppTrackingConsent;
+
+  /// 宿主主动提供给 HarmonyOS SDK 的 OAID。
+  final String? devOaid;
+
   /// 是否允许读取手机状态。仅 Android。
   final bool? canUsePhoneState;
 
   /// 自定义 IMEI。仅 Android。
   final String? imei;
 
-  /// 是否允许读取 Wi-Fi 状态。仅 Android。
+  /// 是否允许读取 Wi-Fi 状态。Android、HarmonyOS 支持。
   final bool? canUseWifiState;
 
-  /// 自定义 MAC 地址。仅 Android。
+  /// 自定义 MAC 地址。Android、HarmonyOS 支持。
   final String? macAddress;
 
   /// 是否允许写外部存储。仅 Android。
@@ -114,6 +125,9 @@ class AdPrivacyConfig {
       if (canUseLocation != null) 'canUseLocation': canUseLocation,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (canUseAppTrackingConsent != null)
+        'canUseAppTrackingConsent': canUseAppTrackingConsent,
+      if (devOaid != null) 'devOaid': devOaid,
       if (canUsePhoneState != null) 'canUsePhoneState': canUsePhoneState,
       if (imei != null) 'imei': imei,
       if (canUseWifiState != null) 'canUseWifiState': canUseWifiState,

@@ -1,8 +1,8 @@
 # gromore_ads_kit
 
-GroMore 广告聚合 Flutter 插件，支持 Android 和 iOS。
+GroMore 广告聚合 Flutter 插件，支持 Android、iOS 和 HarmonyOS/OpenHarmony。
 
-支持开屏、插屏、Banner、激励视频、模板/自渲染信息流、模板/自渲染 Draw 信息流、
+支持开屏、插屏、Banner、激励视频、信息流和 Draw 信息流、
 广告预加载、完整隐私控制、waterfall 诊断、事件/错误/奖励/eCPM 回调，以及
 GroMore 官方预览测试工具。
 
@@ -13,15 +13,18 @@ GroMore 官方预览测试工具。
 
 ## 当前版本
 
-- 插件 `0.3.0`
-- Flutter `>=3.41.0`；使用 FVM Flutter `3.41.10-ohos-0.0.2-beta` 验证
-- Dart `^3.11.5`
+- 插件 `1.0.0`
+- Flutter `>=3.41.6`；Android/iOS 使用 FVM Flutter `3.41.6` 验证，
+  HarmonyOS 使用 FVM Flutter `3.41.10-ohos-0.0.2-beta` 验证
+- Dart `^3.11.4`
 - Android：`minSdk 24`、`compileSdk 36`、Java 17
 - Android GroMore：`com.pangle.cn:mediation-sdk:7.7.1.6`
 - iOS：`13.0+`、Xcode `15.2+`
-- iOS GroMore：`Ads-CN 7.7.0.7`
+- iOS GroMore：`Ads-CN 7.7.0.8`
+- HarmonyOS：Flutter OHOS `3.41.10-ohos-0.0.2-beta`、DevEco Studio
+  `5.0.3.403+`、OpenHarmony API 12+、`@csj/openadsdk 7.5.3`
 
-版本依据为 2026-08-27 查询到的字节跳动官方 Maven 仓库、CocoaPods Trunk
+版本依据为 2026-09-01 查询到的字节跳动官方 Maven/OHPM 仓库、CocoaPods Trunk
 和 GroMore 官方接入文档。三方 ADN 的 SDK 与 Adapter 必须以你在 GroMore 后台
 实际选择并生成的版本为准，插件不会擅自全量引入。
 
@@ -93,7 +96,7 @@ allprojects {
 ## iOS 配置
 
 `0.2.0` 起最低支持 iOS 13。插件通过 CocoaPods 引入
-`Ads-CN/CSJMediation 7.7.0.7`。测试工具不进入插件的常规 Pod 依赖。
+`Ads-CN/CSJMediation 7.7.0.8`。测试工具不进入插件的常规 Pod 依赖。
 
 ### ATT
 
@@ -135,6 +138,47 @@ GroMore 官方说明广告主素材可能仍包含 HTTP 地址。只有你的实
 `PrivacyInfo.xcprivacy`，发布前请按官方说明合并 GroMore 和所有三方 ADN 的条目，
 相同 API 原因不要重复添加。
 
+## HarmonyOS 配置
+
+HarmonyOS 必须使用 Flutter OHOS 分支。Android/iOS 仍可使用普通 Flutter；插件把
+`OhosView` 放在独立入口中，避免鸿蒙专属类型影响普通 Flutter 编译。
+
+宿主工程根目录 `.ohpmrc` 加入官方仓库：
+
+```properties
+registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/repository/byted-ohpm/
+```
+
+插件已引入 `@csj/openadsdk 7.5.3`。宿主 `build-profile.json5` 对应 product 需要：
+
+```json5
+"buildOption": {
+  "strictMode": {
+    "useNormalizedOHMUrl": true
+  }
+}
+```
+
+插件只声明必需的 `ohos.permission.INTERNET` 和可选的
+`ohos.permission.GET_NETWORK_INFO`。`GET_WIFI_INFO`、
+`APPROXIMATELY_LOCATION`、`LOCATION`、`APP_TRACKING_CONSENT` 等敏感权限，
+必须由宿主按真实用途、隐私政策和用户授权自行声明。
+
+HarmonyOS App 使用鸿蒙入口，并在 `runApp` 前注册平台视图：
+
+```dart
+import 'package:gromore_ads_kit/gromore_ads_kit_ohos.dart';
+
+void main() {
+  registerGromoreAdsKitOhosPlatformViews();
+  runApp(const MyApp());
+}
+```
+
+默认只带穿山甲/GroMore 核心包。若要聚合快手或广点通，宿主还要加入与当前版本
+匹配的 Adapter 和本地 HAR，并按官方要求配置 `runtimeOnly.packages`。完整步骤和
+当前官方依赖示例见 [`doc/HARMONYOS.md`](doc/HARMONYOS.md)。
+
 ## 初始化
 
 必须先展示并取得用户对宿主隐私政策的选择，再初始化 SDK。`useMediation` 只能在
@@ -171,9 +215,12 @@ Future<bool> initAdsAfterPrivacyConsent() async {
     '你的7位App ID',
     useMediation: true,
     debugMode: kDebugMode,
+    appName: '你的应用名称',
+    allowShowNotify: true,
     supportMultiProcess: Platform.isAndroid ? false : null,
     privacy: AdPrivacyConfig(
       canUseLocation: false,
+      canUseAppTrackingConsent: false,
       canUsePhoneState: false,
       canUseWifiState: true,
       canUseOaid: true,
@@ -203,8 +250,9 @@ Draw 信息流通用预加载；开屏请使用 `SplashAdRequest(preload: true)`
 final ready = await GromoreAdsKit.isReady(AdType.rewardVideo);
 ```
 
-`AdType.banner` 查询的是 `loadBannerAd` 加载的 API 模式 Banner；每个
-`AdBannerWidget` 是独立 PlatformView，不共享这个状态。
+`AdType.banner` 查询的是 `loadBannerAd` 加载的 API 模式 Banner。Android/iOS 的
+`AdBannerWidget` 是独立 PlatformView；HarmonyOS 的 Widget 会先自动调用
+`loadBannerAd`，成功后再挂载原生视图。
 
 ### 开屏
 
@@ -253,12 +301,31 @@ const AdBannerWidget(
 ```
 
 `enableMixedMode` 打开后，GroMore 返回混合信息流素材时，Android 和 iOS 都会使用
-插件内置 Banner 布局，并完成点击、关闭区域注册。
+插件内置 Banner 布局，并完成点击、关闭区域注册。GroMore 官方明确说明
+鸿蒙聚合维度暂不支持自渲染 Banner，因此 `enableMixedMode` 在鸿蒙端会被忽略。
+
+如果鸿蒙工程使用 `useMediation: false` 直连穿山甲，可以显式开启官方原生
+自渲染 Banner：
+
+```dart
+AdBannerWidget(
+  posId: 'csj_banner_pos_id',
+  width: 375,
+  height: 100,
+  harmonyNativeRender: true,
+)
+```
+
+鸿蒙独立 `showBannerAd()` 返回 `false`，请使用 `AdBannerWidget` 展示。
 
 ### 信息流
 
 Flutter 视图同时支持模板和自渲染广告。自渲染会使用插件内置默认布局，并按官网
 要求先注册展示、点击和 dislike 交互再展示。
+
+HarmonyOS `1.0.0` 使用官方 `loadFeedAd` 聚合混出链路。模板素材挂载 SDK
+`NodeController`，原生素材使用插件内置 ArkUI 布局，并注册展示、普通点击、
+创意点击和 dislike 计费事件。
 
 ```dart
 final adIds = await GromoreAdsKit.loadFeedAd(
@@ -281,6 +348,9 @@ if (adIds.isNotEmpty) {
 ### Draw 信息流
 
 Flutter 视图同时支持模板和自渲染 Draw 广告，默认布局和交互注册由插件完成。
+
+HarmonyOS `1.0.0` 使用官方 `loadDrawAd` 聚合混出链路，同时支持模板和原生
+自渲染 Draw，并接入视频播放、暂停、续播和完成监听。
 
 ```dart
 final adIds = await GromoreAdsKit.loadDrawFeedAd(
@@ -322,10 +392,14 @@ final info = await GromoreAdsKit.getAdLoadInfo(
 );
 ```
 
+HarmonyOS SDK 当前公开接口没有提供与 Android/iOS 同等的逐 ADN 加载结果查询，
+因此 `1.0.0` 在鸿蒙端返回空列表；请使用 SDK Debug 日志和后台测试能力排查填充。
+
 ## 官方预览测试工具
 
 测试工具要求 Android/iOS GroMore `7.2.0.0+`，只允许放在 Debug 包中，并且必须
 在 SDK 初始化成功后调用。还需要在 GroMore 后台开启全局广告预览模式和测试权限。
+HarmonyOS `1.0.0` 的 `launchTestTools()` 返回 `false`，不伪造未公开的工具入口。
 
 ### Android
 
@@ -361,6 +435,7 @@ if (kDebugMode) {
 
 ## 版本升级
 
+- 0.3.0 → 1.0.0：[`doc/MIGRATION_1_0_0.md`](doc/MIGRATION_1_0_0.md)
 - 0.2.0 → 0.3.0：[`doc/MIGRATION_0_3_0.md`](doc/MIGRATION_0_3_0.md)
 - 0.1.0 → 0.2.0：[`doc/MIGRATION_0_2_0.md`](doc/MIGRATION_0_2_0.md)
 
@@ -374,6 +449,14 @@ if (kDebugMode) {
 - [GroMore Android SDK 接入与初始化](https://www.csjplatform.com/supportcenter/28659)
 - [GroMore iOS SDK 接入配置](https://www.csjplatform.com/supportcenter/28696)
 - [GroMore iOS 初始化与隐私合规](https://www.csjplatform.com/supportcenter/28697)
+- [GroMore HarmonyOS SDK 与工程配置](https://www.csjplatform.com/supportcenter/28670)
+- [GroMore HarmonyOS 初始化与隐私合规](https://www.csjplatform.com/supportcenter/28671)
+- [GroMore HarmonyOS 开屏](https://www.csjplatform.com/supportcenter/28672)
+- [GroMore HarmonyOS 激励视频](https://www.csjplatform.com/supportcenter/28673)
+- [GroMore HarmonyOS 插全屏](https://www.csjplatform.com/supportcenter/28674)
+- [GroMore HarmonyOS 信息流](https://www.csjplatform.com/supportcenter/28675)
+- [GroMore HarmonyOS Banner](https://www.csjplatform.com/supportcenter/28676)
+- [GroMore HarmonyOS Draw](https://www.csjplatform.com/supportcenter/28677)
 - [GroMore 预览测试工具](https://www.csjplatform.com/en/supportcenter/28563)
 - [Android Maven 元数据](https://artifact.bytedance.com/repository/pangle/com/pangle/cn/mediation-sdk/maven-metadata.xml)
 - [Ads-CN CocoaPods Trunk 信息](https://trunk.cocoapods.org/api/v1/pods/Ads-CN)

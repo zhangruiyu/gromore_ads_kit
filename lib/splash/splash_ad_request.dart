@@ -254,6 +254,18 @@ class SplashAdIOSOptions {
   };
 }
 
+/// HarmonyOS 平台开屏广告可选配置。
+class SplashAdHarmonyOptions {
+  const SplashAdHarmonyOptions({this.fallback});
+
+  /// 穿山甲直客兜底配置，对应 HarmonyOS `CSJSplashUserData`。
+  final SplashAdFallback? fallback;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    if (fallback != null) 'fallback': fallback!.toJson(),
+  };
+}
+
 /// 开屏广告请求参数
 class SplashAdRequest {
   const SplashAdRequest({
@@ -263,6 +275,7 @@ class SplashAdRequest {
     this.logo,
     this.android,
     this.ios,
+    this.harmony,
   });
 
   /// 广告位 ID
@@ -283,6 +296,9 @@ class SplashAdRequest {
   /// iOS 端配置
   final SplashAdIOSOptions? ios;
 
+  /// HarmonyOS 端配置
+  final SplashAdHarmonyOptions? harmony;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
     'posId': posId,
     if (timeout != const Duration(milliseconds: 3500))
@@ -291,6 +307,7 @@ class SplashAdRequest {
     if (logo != null) 'logo': logo!.toJson(),
     if (android != null) 'android': android!.toJson(),
     if (ios != null) 'ios': ios!.toJson(),
+    if (harmony != null) 'harmony': harmony!.toJson(),
   };
 
   SplashAdRequest copyWith({
@@ -300,6 +317,7 @@ class SplashAdRequest {
     SplashAdLogo? logo,
     SplashAdAndroidOptions? android,
     SplashAdIOSOptions? ios,
+    SplashAdHarmonyOptions? harmony,
   }) {
     return SplashAdRequest(
       posId: posId ?? this.posId,
@@ -308,6 +326,7 @@ class SplashAdRequest {
       logo: logo ?? this.logo,
       android: android ?? this.android,
       ios: ios ?? this.ios,
+      harmony: harmony ?? this.harmony,
     );
   }
 }

@@ -280,9 +280,9 @@ class GromoreAdsKit {
     return _platform.requestIdfa();
   }
 
-  /// 动态请求相关权限（仅 Android）
+  /// 动态请求相关权限（Android、HarmonyOS）
   static Future<bool> get requestPermissionIfNecessary async {
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid && Platform.operatingSystem != 'ohos') {
       return true;
     }
     return _platform.requestPermissionIfNecessary();
@@ -299,12 +299,15 @@ class GromoreAdsKit {
   /// 必须在用户同意隐私政策后调用。只有返回 `true` 后才能请求广告。
   ///
   /// **平台特定参数**：
+  /// * [appName]、[allowShowNotify]：HarmonyOS 官方初始化参数
   /// * [supportMultiProcess]: 仅Android支持，iOS会自动忽略此参数
   ///   单进程应用请传 `false`；多进程应用才传 `true`，并在用到广告的进程初始化SDK
   static Future<bool> initAd(
     String appId, {
     required bool useMediation,
     required bool debugMode,
+    String? appName,
+    bool? allowShowNotify,
     Object? config,
     int? limitPersonalAds,
     int? limitProgrammaticAds,
@@ -317,6 +320,8 @@ class GromoreAdsKit {
       'appId': appId,
       'useMediation': useMediation,
       'debugMode': debugMode,
+      'appName': appName,
+      'allowShowNotify': allowShowNotify,
       'config': config,
       'limitPersonalAds': limitPersonalAds,
       'limitProgrammaticAds': limitProgrammaticAds,
@@ -684,6 +689,10 @@ class GromoreAdsKit {
   }
 
   /// 加载Banner广告
+  ///
+  /// [harmonyNativeRender] 仅用于 HarmonyOS 直连穿山甲的原生自渲染
+  /// Banner。GroMore 聚合维度的鸿蒙 Banner 暂不支持自渲染，聚合
+  /// 广告位请保持 `false` 使用官方模板。
   static Future<bool> loadBannerAd(
     String posId, {
     int? width,
@@ -694,6 +703,7 @@ class GromoreAdsKit {
     String? scenarioId,
     bool? useSurfaceView,
     bool? enableMixedMode,
+    bool? harmonyNativeRender,
     Map<String, dynamic>? extraParams,
   }) {
     final params = _buildParams({
@@ -706,12 +716,16 @@ class GromoreAdsKit {
       'scenarioId': scenarioId,
       'useSurfaceView': useSurfaceView,
       'enableMixedMode': enableMixedMode,
+      'harmonyNativeRender': harmonyNativeRender,
       'extraParams': extraParams,
     });
     return _platform.loadBannerAd(params);
   }
 
-  /// 展示Banner广告（仅API模式）
+  /// 展示Banner广告（仅API模式）。
+  ///
+  /// HarmonyOS 暂不支持脱离 Flutter Widget 的独立悬浮 Banner，会返回 `false`；
+  /// 请直接使用 [AdBannerWidget]。
   static Future<bool> showBannerAd() {
     return _platform.showBannerAd();
   }

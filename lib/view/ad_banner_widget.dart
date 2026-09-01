@@ -3,6 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ohos_platform_view.dart';
+
 /// Banner广告Widget
 class AdBannerWidget extends StatefulWidget {
   /// 广告位ID
@@ -36,6 +38,11 @@ class AdBannerWidget extends StatefulWidget {
 
   /// 启用Banner混出信息流（聚合功能）
   final bool? enableMixedMode;
+
+  /// HarmonyOS 直连穿山甲时使用原生自渲染 Banner。
+  ///
+  /// GroMore 鸿蒙聚合 Banner 官方暂不支持自渲染，聚合广告位不要开启。
+  final bool? harmonyNativeRender;
 
   /// 扩展参数
   final Map<String, dynamic>? extraParams;
@@ -79,6 +86,7 @@ class AdBannerWidget extends StatefulWidget {
     this.scenarioId,
     this.useSurfaceView,
     this.enableMixedMode,
+    this.harmonyNativeRender,
     this.extraParams,
     // 事件回调
     this.onAdLoaded,
@@ -96,6 +104,26 @@ class AdBannerWidget extends StatefulWidget {
 }
 
 class _AdBannerWidgetState extends State<AdBannerWidget> {
+  static const MethodChannel _pluginChannel = MethodChannel('gromore_ads_kit');
+
+  Future<bool>? _harmonyBannerReady;
+
+  @override
+  void didUpdateWidget(covariant AdBannerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.posId != widget.posId ||
+        oldWidget.width != widget.width ||
+        oldWidget.height != widget.height ||
+        oldWidget.mutedIfCan != widget.mutedIfCan ||
+        oldWidget.bidNotify != widget.bidNotify ||
+        oldWidget.scenarioId != widget.scenarioId ||
+        oldWidget.enableMixedMode != widget.enableMixedMode ||
+        oldWidget.harmonyNativeRender != widget.harmonyNativeRender ||
+        oldWidget.extraParams != widget.extraParams) {
+      _harmonyBannerReady = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.isVisible) {
@@ -131,8 +159,37 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
     if (widget.enableMixedMode != null) {
       creationParams['enableMixedMode'] = widget.enableMixedMode;
     }
+    if (widget.harmonyNativeRender != null) {
+      creationParams['harmonyNativeRender'] = widget.harmonyNativeRender;
+    }
     if (widget.extraParams != null) {
       creationParams['extraParams'] = widget.extraParams;
+    }
+
+    if (isGromoreOhosPlatform) {
+      _harmonyBannerReady ??= _loadHarmonyBanner(creationParams);
+      return SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: FutureBuilder<bool>(
+          future: _harmonyBannerReady,
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.data != true) {
+              return const SizedBox.shrink();
+            }
+            return buildGromoreOhosPlatformView(
+              viewType: viewType,
+              creationParams: creationParams,
+              onPlatformViewCreated: _onPlatformViewCreated,
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<OneSequenceGestureRecognizer>(
+                  () => EagerGestureRecognizer(),
+                ),
+              },
+            );
+          },
+        ),
+      );
     }
 
     return SizedBox(
@@ -164,6 +221,16 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
               },
             ),
     );
+  }
+
+  Future<bool> _loadHarmonyBanner(Map<String, dynamic> params) async {
+    try {
+      return await _pluginChannel.invokeMethod<bool>('loadBannerAd', params) ??
+          false;
+    } on PlatformException catch (error) {
+      widget.onAdError?.call(error.message ?? error.code);
+      return false;
+    }
   }
 
   void _onPlatformViewCreated(int id) {

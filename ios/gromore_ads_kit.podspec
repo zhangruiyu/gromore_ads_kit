@@ -4,8 +4,8 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'gromore_ads_kit'
-  s.version          = '0.3.0'
-  s.summary          = '支持 Android 和 iOS 的 Flutter GroMore 广告插件'
+  s.version          = '1.0.0'
+  s.summary          = 'Flutter GroMore 广告插件的 iOS 实现'
   s.description      = <<-DESC
   基于穿山甲 GroMore SDK 的 Flutter 广告插件，支持开屏、插屏、
   Banner、激励视频、信息流和 Draw 信息流等广告形式。
@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.dependency 'Flutter'
 
   # GroMore 聚合 SDK（包含 BUAdSDK）
-  s.dependency 'Ads-CN/CSJMediation', '7.7.0.7'
+  s.dependency 'Ads-CN/CSJMediation', '7.7.0.8'
 
   # 三方ADN及Adapter请严格使用GroMore后台当前生成包对应的版本。
 

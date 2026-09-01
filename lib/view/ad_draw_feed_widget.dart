@@ -3,6 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ohos_platform_view.dart';
+
 /// Draw信息流广告Widget
 /// 用于展示Draw类型的信息流广告，区别于传统信息流广告
 /// Draw广告支持特殊的视频控制、自定义渲染等功能
@@ -98,6 +100,17 @@ class _AdDrawFeedWidgetState extends State<AdDrawFeedWidget> {
               layoutDirection: TextDirection.ltr,
               creationParams: creationParams,
               creationParamsCodec: const StandardMessageCodec(),
+              onPlatformViewCreated: _onPlatformViewCreated,
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<OneSequenceGestureRecognizer>(
+                  () => EagerGestureRecognizer(),
+                ),
+              },
+            )
+          : isGromoreOhosPlatform
+          ? buildGromoreOhosPlatformView(
+              viewType: viewType,
+              creationParams: creationParams,
               onPlatformViewCreated: _onPlatformViewCreated,
               gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                 Factory<OneSequenceGestureRecognizer>(
