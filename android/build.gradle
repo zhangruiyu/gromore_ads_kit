@@ -6,16 +6,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url "https://artifact.bytedance.com/repository/pangle"  //穿山甲融合SDK依赖
-        }
     }
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.11.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-        // GroMore自动拉取Adapter AAR的插件脚本。
-        classpath 'com.pangle.cn:mediation-auto-adapter:1.0.3'
     }
 }
 
@@ -23,8 +18,16 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+// AGP 8 不允许 Android Library 直接依赖本地 AAR，所以把 GroMore、测试工具和 ADN
+// 依赖都放进插件自带的 Maven 目录。宿主无需再配置字节跳动远程仓库。
+def bundledAdnRepository = uri("$projectDir/maven")
+rootProject.allprojects {
+    repositories {
         maven {
-            url "https://artifact.bytedance.com/repository/pangle"  //穿山甲融合SDK依赖
+            url bundledAdnRepository
         }
     }
 }
@@ -60,7 +63,27 @@ android {
         implementation 'com.squareup.okhttp3:okhttp:3.12.1'
         implementation "com.pangle.cn:mediation-sdk:7.7.1.6"
 
-        // 宿主 Debug 工程引入官方 tools-release.aar 后，用于加载测试工具图片。
+        // 插件直接携带 GroMore 官方测试工具，宿主无需再单独声明依赖。
+        implementation 'com.pangle.cn:mediation-test-tools:7.7.1.6'
+
+        // 优量汇 SDK 和 Adapter 必须成对进入 APK。
+        implementation 'com.qq.e.union:union:4.680.1550'
+        implementation 'com.pangle.cn:mediation-gdt-adapter:4.680.1550.1'
+
+        // 百度 SDK 和 Adapter 必须成对进入 APK；使用 GroMore 7.7.1.6 官方包里的 9.4503。
+        implementation 'com.baidu.local:mobads:9.4503'
+        implementation 'com.pangle.cn:mediation-baidu-adapter:9.4503.1'
+
+        // Sigmob SDK、公共库和 Adapter 必须使用相互匹配的版本。
+        implementation 'com.sigmob.local:windad:4.25.14'
+        implementation 'com.sigmob.local:windad-common:2.0.1'
+        implementation 'com.pangle.cn:mediation-sigmob-adapter:4.25.14.1'
+
+        // 快手 SDK 和 Adapter 必须成对进入 APK；版本来自 GroMore 7.7.1.6 官方生成包。
+        implementation 'com.kuaishou.local:kssdk-ad:5.3.20.1'
+        implementation 'com.pangle.cn:mediation-ks-adapter:5.3.20.1.1'
+
+        // 用于加载 GroMore 测试工具里的图片。
         implementation 'com.github.bumptech.glide:glide:4.16.0'
 
         testImplementation("org.jetbrains.kotlin:kotlin-test")

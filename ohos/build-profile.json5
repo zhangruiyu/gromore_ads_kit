@@ -1,6 +1,17 @@
 {
   "apiType": "stageMode",
-  "buildOption": {},
+  "buildOption": {
+    "arkOptions": {
+      "runtimeOnly": {
+        "packages": [
+          "@csj/adapter_ks",
+          "ksadsdk",
+          "@csj/adapter_gdt",
+          "@gdt/gdt-union-sdk"
+        ]
+      }
+    }
+  },
   "targets": [
     {
       "name": "default"

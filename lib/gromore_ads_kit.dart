@@ -740,7 +740,7 @@ class GromoreAdsKit {
   /// 打开可视化测试工具界面,用于校验SDK接入、测试广告配置、验证各ADN广告加载是否正常。
   ///
   /// **重要提示**:
-  /// - 🔴 此工具**仅用于开发和测试阶段**,上线前**必须移除**相关代码和依赖
+  /// - 此工具用于开发和广告排查，请勿向普通用户暴露入口
   /// - 📋 需要在SDK初始化(`initAd`)完成后调用
   /// - 🧪 使用前需要在穿山甲平台注册测试设备ID
   ///
@@ -748,11 +748,11 @@ class GromoreAdsKit {
   /// - **iOS**:
   ///   - 仅在Debug构建中可用(`#if DEBUG`),Release构建自动禁用
   ///   - 要求iOS 13.0或更高版本
-  ///   - 从GroMore后台当前SDK生成包取得`BUAdTestMeasurement.xcframework`和资源Bundle
-  ///   - 只在宿主Debug配置中链接，插件通过`canImport`检测
+  ///   - 插件已携带匹配版本的`BUAdTestMeasurement.xcframework`和资源Bundle
+  ///   - 宿主无需修改Podfile；二进制会随插件进入各构建类型
   /// - **Android**:
-  ///   - 从GroMore后台当前SDK生成包取得`tools-release.aar`
-  ///   - 仅在宿主Debug配置中使用`debugImplementation`引入
+  ///   - 插件已直接携带对应版本的测试工具依赖，宿主无需额外配置
+  ///   - 插件原生层不限制构建类型，是否开放入口由宿主应用决定
   ///
   /// **测试工具功能**:
   /// - ✅ SDK接入检测(融合SDK、各ADN SDK、Adapter版本)
@@ -783,7 +783,6 @@ class GromoreAdsKit {
   /// **常见错误**:
   /// - `SDK_NOT_READY`: SDK未初始化,请先调用`initAd`
   /// - `ACTIVITY_ERROR`: 无法获取Activity/ViewController
-  /// - `DEBUG_ONLY`: Release构建不支持测试工具
   ///
   /// @returns 启动成功返回`true`,失败返回`false`或抛出异常
   ///

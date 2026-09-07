@@ -1,0 +1,6 @@
+framework module BUAdTestMeasurement {
+  umbrella header "BUAdTestMeasurement.h"
+
+  export *
+  module * { export * }
+}

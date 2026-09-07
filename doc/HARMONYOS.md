@@ -1,6 +1,6 @@
 # HarmonyOS 接入
 
-本页对应 `gromore_ads_kit 1.0.0`，核对日期为 2026-09-01。插件使用
+本页对应 `gromore_ads_kit 1.0.1`，核对日期为 2026-09-04。插件使用
 Flutter OHOS `3.41.10-ohos-0.0.2-beta` 和 GroMore HarmonyOS
 `@csj/openadsdk 7.5.3` 验证。
 
@@ -22,11 +22,15 @@ Flutter OHOS `3.41.10-ohos-0.0.2-beta` 和 GroMore HarmonyOS
 registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/repository/byted-ohpm/
 ```
 
-插件 HAR 已声明核心依赖：
+插件 HAR 已声明穿山甲核心包、快手 SDK、优量汇 SDK 和对应 GroMore Adapter：
 
 ```json5
 "dependencies": {
-  "@csj/openadsdk": "7.5.3"
+  "@csj/openadsdk": "7.5.3",
+  "@csj/adapter_ks": "3.0.6-6",
+  "ksadsdk": "3.0.6",
+  "@csj/adapter_gdt": "1.2.0-2",
+  "@gdt/gdt-union-sdk": "file:libs/GDTUnionSDK-default-release.har"
 }
 ```
 
@@ -40,30 +44,28 @@ registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/reposi
 }
 ```
 
-## 可选 ADN
+## 广告网络依赖
 
-插件不默认引入快手、广点通 SDK，避免把业务没有使用的三方包带进 HAP。官方当前
-示例依赖如下，版本升级时应以 GroMore 后台生成包和官网为准：
+插件默认引入穿山甲、快手和优量汇。穿山甲与快手的核心 SDK、Adapter 通过官方
+OHPM 仓库解析；优量汇的核心 SDK 当前不在穿山甲或 OpenHarmony 公共 OHPM 仓库，
+因此插件按 GroMore 官方依赖方式内置 `GDTUnionSDK-default-release.har`，宿主不需要
+另外下载或声明。当前配对版本为：
 
 ```json5
 "dependencies": {
   "@csj/openadsdk": "7.5.3",
-  "@csj/adapter_ks": "3.0.6-6",
-  "ksadsdk": "file:libs/KSAdSDK.har",
   "@csj/adapter_gdt": "1.2.0-2",
   "@gdt/gdt-union-sdk": "file:libs/GDTUnionSDK-default-release.har"
 }
 ```
 
-主 module 的 `build-profile.json5` 同时加入：
+插件的 `build-profile.json5` 已同时加入：
 
 ```json5
 "buildOption": {
   "arkOptions": {
     "runtimeOnly": {
       "packages": [
-        "@csj/adapter_ks",
-        "ksadsdk",
         "@csj/adapter_gdt",
         "@gdt/gdt-union-sdk"
       ]
@@ -72,8 +74,7 @@ registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/reposi
 }
 ```
 
-如果只接某一家 ADN，只保留它的 Adapter、SDK 和 `runtimeOnly` 项。不要混用不同
-生成包中的 Adapter 与 SDK。
+不要在宿主中重复加入不同版本的优量汇 Adapter 或 SDK，以免动态模块命中错误版本。
 
 ## 权限与隐私
 

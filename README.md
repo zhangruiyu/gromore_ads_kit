@@ -13,20 +13,20 @@ GroMore 官方预览测试工具。
 
 ## 当前版本
 
-- 插件 `1.0.0`
+- 插件 `1.0.1`
 - Flutter `>=3.41.6`；Android/iOS 使用 FVM Flutter `3.41.6` 验证，
   HarmonyOS 使用 FVM Flutter `3.41.10-ohos-0.0.2-beta` 验证
 - Dart `^3.11.4`
 - Android：`minSdk 24`、`compileSdk 36`、Java 17
 - Android GroMore：`com.pangle.cn:mediation-sdk:7.7.1.6`
 - iOS：`13.0+`、Xcode `15.2+`
-- iOS GroMore：`Ads-CN 7.7.0.8`
+- iOS GroMore：`Ads-CN-Beta 7.8.0.2`
 - HarmonyOS：Flutter OHOS `3.41.10-ohos-0.0.2-beta`、DevEco Studio
   `5.0.3.403+`、OpenHarmony API 12+、`@csj/openadsdk 7.5.3`
 
-版本依据为 2026-09-01 查询到的字节跳动官方 Maven/OHPM 仓库、CocoaPods Trunk
-和 GroMore 官方接入文档。三方 ADN 的 SDK 与 Adapter 必须以你在 GroMore 后台
-实际选择并生成的版本为准，插件不会擅自全量引入。
+版本依据为 2026-09-02 查询到的字节跳动官方 Maven/OHPM 仓库、CocoaPods Trunk
+和 GroMore 官方接入文档。Android、iOS 和 HarmonyOS 的官方 SDK 版本并不一致，
+不能把某个平台的 Adapter 版本照搬到另一个平台。
 
 ## 添加依赖
 
@@ -42,35 +42,47 @@ dependencies:
 
 ## Android 配置
 
-### Maven 仓库
+### Maven 依赖
 
-GroMore 不在 Google Maven 或 Maven Central 中。在宿主工程
-`android/settings.gradle.kts` 的 `dependencyResolutionManagement` 中加入：
+插件已经把 GroMore `7.7.1.6`、官方测试工具和当前配套 ADN Adapter 放进自身的
+本地 Maven 目录，并自动注册给宿主 Android 工程。使用者不需要在
+`settings.gradle` 或项目级 `build.gradle` 添加字节跳动 Maven 仓库，也不需要
+重复引入 `okhttp:3.12.1`。
 
-```kotlin
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
-    repositories {
-        google()
-        mavenCentral()
-        maven(url = "https://artifact.bytedance.com/repository/pangle")
-    }
-}
-```
+如果以后更换 GroMore 或 Adapter 版本，需要同时替换插件 `android/maven` 里的
+AAR/POM 和 `android/build.gradle` 中的坐标，避免编译坐标与实际二进制不一致。
 
-旧式 Groovy 工程可以在项目级 `build.gradle` 中加入：
+### 第三方 ADN
+
+GroMore 后台勾选某个广告网络，只会把该网络写进聚合配置，不会自动把它的原生
+SDK 和 Adapter 装进 APK。二者版本不匹配时，初始化日志会提示“未按要求接入”。
+
+本插件 `1.0.1` 已内置以下优量汇依赖，宿主不用重复添加：
 
 ```groovy
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://artifact.bytedance.com/repository/pangle" }
-    }
-}
+implementation 'com.qq.e.union:union:4.680.1550'
+implementation 'com.pangle.cn:mediation-gdt-adapter:4.680.1550.1'
 ```
 
-插件已经引入官方要求的 `okhttp:3.12.1`，宿主不需要重复添加。
+融合 SDK `mediation-sdk` 已经包含穿山甲能力，穿山甲没有单独的 Adapter 依赖。
+初始化日志里笼统列出 `pangle`，不等于还需要再引入一份穿山甲 SDK。
+
+插件同时按照 GroMore 官方 Android 工程自动声明穿山甲 `TTFileProvider`、优量汇
+`GDTFileProvider` 及其路径资源，宿主无需再复制这两段 Manifest 配置。
+
+百度 Adapter 不会自动传递百度原生 SDK。插件已经内置 GroMore `7.7.1.6` 官方
+Android 包指定的百度 SDK `9.4503` 和 Adapter `9.4503.1`；宿主不需要重复添加。
+
+Sigmob 不能只加 Adapter。本插件已经配套内置 WindAd SDK、common SDK 和 Sigmob
+Adapter；若需要更换版本，应以 GroMore 后台为当前应用生成的 Android SDK 包为准，
+同时替换这三项依赖，不能只升级其中一项。详细步骤见
+[`doc/ANDROID_ADN.md`](doc/ANDROID_ADN.md)。
+
+快手同样需要原生 SDK 和 Adapter 成对接入。插件已内置 GroMore `7.7.1.6` 官方
+生成包指定的快手 SDK `5.3.20.1` 和 Adapter `5.3.20.1.1`，宿主无需重复添加。
+
+插件不再依赖 `mediation-auto-adapter`：它不能替宿主下载三方 ADN SDK，而且在
+Flutter 插件 module 中没有应用到宿主 App，不能解决运行时 Adapter 缺失。
 
 ### Android 要求
 
@@ -96,7 +108,26 @@ allprojects {
 ## iOS 配置
 
 `0.2.0` 起最低支持 iOS 13。插件通过 CocoaPods 引入
-`Ads-CN/CSJMediation 7.7.0.8`。测试工具不进入插件的常规 Pod 依赖。
+`Ads-CN-Beta/CSJMediation 7.8.0.2`。官方预览工具和所需资源由插件统一携带。
+
+### 第三方 ADN
+
+插件已经把 GroMore iOS 文档列出的四家通用 ADN 的原生 SDK 和 Adapter 配对，
+宿主不用再手工下载：
+
+| ADN | 原生 SDK | GroMore Adapter |
+| --- | --- | --- |
+| 优量汇/GDT | `GDTMobSDK 4.15.90` | `CSJMGdtAdapter 4.15.90.1` |
+| 百度 | `BaiduMobAdSDK 10.050` | `CSJMBaiduAdapter 10.050.3` |
+| Sigmob | `SigmobAd-iOS 5.1.2` | `CSJMSigmobAdapter 5.1.2.1` |
+| 快手 | `KSAdSDK 5.5.10.1` | `CSJMKsAdapter 5.5.10.1.1` |
+
+原生 SDK 由 CocoaPods 官方索引下载；GroMore Adapter 来自穿山甲官方静态包，
+随插件保存在 `ios/Vendor`，并保留原始 MIT LICENSE。这里只完成客户端能力接入，
+实际请求哪家广告仍由 GroMore 后台的广告网络、代码位和瀑布流配置决定。
+
+这些版本来自 GroMore `7.8.0.2` 官方聚合包及其示例 Podfile，原生 SDK 与 Adapter
+必须保持成对升级。
 
 ### ATT
 
@@ -112,7 +143,8 @@ SDK 以非 IDFA 方式工作。
 
 ### SKAdNetwork
 
-穿山甲当前公开的两个标识符如下；接入其他 ADN 时还要按对应 ADN 最新文档补齐：
+插件不能替宿主改 `Info.plist`。使用上述 ADN 时，按各平台最新文档补齐标识符。
+GroMore 当前公开表中穿山甲、Sigmob 和 GDT 的标识符如下：
 
 ```xml
 <key>SKAdNetworkItems</key>
@@ -124,6 +156,14 @@ SDK 以非 IDFA 方式工作。
     <dict>
         <key>SKAdNetworkIdentifier</key>
         <string>x2jnk7ly8j.skadnetwork</string>
+    </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>8922nb4gd.skadnetwork</string>
+    </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>f7s53z58qe.skadnetwork</string>
     </dict>
 </array>
 ```
@@ -149,7 +189,11 @@ HarmonyOS 必须使用 Flutter OHOS 分支。Android/iOS 仍可使用普通 Flut
 registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/repository/byted-ohpm/
 ```
 
-插件已引入 `@csj/openadsdk 7.5.3`。宿主 `build-profile.json5` 对应 product 需要：
+插件已引入 `@csj/openadsdk 7.5.3`、快手 `ksadsdk 3.0.6`、优量汇
+`@gdt/gdt-union-sdk 1.2.0`，以及匹配的 `@csj/adapter_ks 3.0.6-6` 和
+`@csj/adapter_gdt 1.2.0-2`。优量汇核心 SDK 随插件以本地 HAR 提供，其余依赖从
+官方 OHPM 仓库解析。宿主
+`build-profile.json5` 对应 product 需要：
 
 ```json5
 "buildOption": {
@@ -175,9 +219,9 @@ void main() {
 }
 ```
 
-默认只带穿山甲/GroMore 核心包。若要聚合快手或广点通，宿主还要加入与当前版本
-匹配的 Adapter 和本地 HAR，并按官方要求配置 `runtimeOnly.packages`。完整步骤和
-当前官方依赖示例见 [`doc/HARMONYOS.md`](doc/HARMONYOS.md)。
+默认带穿山甲、快手和优量汇。优量汇 Adapter、腾讯底层 SDK 及
+`runtimeOnly.packages` 已全部放在插件内，宿主不需要再复制 HAR 或重复声明依赖。
+完整版本说明见 [`doc/HARMONYOS.md`](doc/HARMONYOS.md)。
 
 ## 初始化
 
@@ -397,30 +441,27 @@ HarmonyOS SDK 当前公开接口没有提供与 Android/iOS 同等的逐 ADN 加
 
 ## 官方预览测试工具
 
-测试工具要求 Android/iOS GroMore `7.2.0.0+`，只允许放在 Debug 包中，并且必须
-在 SDK 初始化成功后调用。还需要在 GroMore 后台开启全局广告预览模式和测试权限。
+测试工具要求 Android/iOS GroMore `7.2.0.0+`，并且必须在 SDK 初始化成功后调用。
+还需要在 GroMore 后台开启全局广告预览模式和测试权限。
 HarmonyOS `1.0.0` 的 `launchTestTools()` 返回 `false`，不伪造未公开的工具入口。
 
 ### Android
 
-插件不内置可能过期的 `tools-release.aar`。请从 GroMore 后台按当前 SDK/ADN 配置
-生成并下载 SDK 包，把其中的 `tools-release.aar` 放到宿主
-`android/app/libs/`，再添加：
+插件已经通过 `implementation` 直接携带与融合 SDK 配套的
+`com.pangle.cn:mediation-test-tools:7.7.1.6`，宿主不需要重复声明依赖。
+Android 原生层不限制构建类型，是否开放入口由宿主应用决定。
 
-```kotlin
-dependencies {
-    debugImplementation(files("libs/tools-release.aar"))
-}
-```
+这意味着 Android Release 产物也会包含测试工具。GroMore 当前官方文档仍将它标为
+测试阶段工具并注明不可带到线上，请在发布前自行评估包体和平台审核风险。
 
 ### iOS
 
-从 GroMore 后台当前 SDK 生成包中取出 `BUAdTestMeasurement.xcframework` 和
-`BUAdTestMeasurement.bundle`，在 Xcode 中只加入宿主 Debug 配置。插件使用
-`#if DEBUG && canImport(BUAdTestMeasurement)` 检测；未引入时会返回明确错误。
+插件已直接携带与当前 GroMore 版本匹配的 `BUAdTestMeasurement.xcframework` 和
+`BUAdTestMeasurement.bundle`，宿主不需要下载文件或修改 `Podfile`。Swift 入口仍由
+`#if DEBUG` 限制，Release 中调用会返回明确错误。
 
-不要直接把 `Ads-CN/BUAdTestMeasurement` subspec 添加为插件依赖：它和
-`CSJMediation` 会合并进同一个 CocoaPods target，可能连同测试资源一起进入 Release。
+这意味着 iOS Release 产物也会包含测试工具二进制和资源。该取舍用于保证插件使用者
+拿到依赖后即可调试；宿主仍应只在开发者页面开放入口，并自行评估包体和平台审核风险。
 
 业务侧仍要限制调用：
 
@@ -430,8 +471,7 @@ if (kDebugMode) {
 }
 ```
 
-上线前删除调用，并检查 Release 归档不含 Android `tools-release.aar` 或 iOS
-`BUAdTestMeasurement`。
+推荐只在 `kDebugMode` 下调用，避免向普通用户暴露入口。
 
 ## 版本升级
 
@@ -440,6 +480,7 @@ if (kDebugMode) {
 - 0.1.0 → 0.2.0：[`doc/MIGRATION_0_2_0.md`](doc/MIGRATION_0_2_0.md)
 
 自定义 ADN 的职责边界见 [`doc/CUSTOM_ADN.md`](doc/CUSTOM_ADN.md)。
+Android 官方 ADN 的依赖说明见 [`doc/ANDROID_ADN.md`](doc/ANDROID_ADN.md)。
 
 官网能力逐项核对结果见
 [`doc/OFFICIAL_DOCS_GAP_ANALYSIS.md`](doc/OFFICIAL_DOCS_GAP_ANALYSIS.md)。
@@ -463,4 +504,5 @@ if (kDebugMode) {
 
 ## 许可证
 
-MIT，详见 [`LICENSE`](LICENSE)。
+插件代码使用 MIT，详见 [`LICENSE`](LICENSE)。随包提供的三方二进制及其包内声明见
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。

@@ -1,3 +1,34 @@
+## Unreleased
+
+* HarmonyOS 内置优量汇 `@gdt/gdt-union-sdk 1.2.0` HAR 和匹配的 GroMore Adapter
+  `@csj/adapter_gdt 1.2.0-2`，宿主无需再复制 HAR 或配置 `runtimeOnly`。
+* HarmonyOS 内置快手 `ksadsdk 3.0.6` 和匹配的 GroMore Adapter
+  `@csj/adapter_ks 3.0.6-6`，全部通过官方 OHPM 仓库远程依赖。
+* Android 将 `mediation-test-tools:7.7.1.6` 改为插件内置依赖，宿主不再重复配置。
+* Android 将 GroMore、测试工具和四家 ADN Adapter 一并放进插件本地 Maven，宿主
+  不再需要配置字节跳动 Maven 仓库。
+* Android GroMore SDK、测试工具和 ADN Adapter 统一使用 `com.pangle.cn` 正式 Maven
+  坐标，与 GroMore 官方 Android 下载包保持一致。
+* Android 内置 GroMore `7.7.1.6` 官方包配套的百度 SDK `9.4503`，修复只有
+  Adapter、缺少百度原生 SDK 导致的初始化失败。
+* Android 内置 GroMore `7.7.1.6` 官方包配套的快手 SDK `5.3.20.1` 和 Adapter
+  `5.3.20.1.1`，修复快手广告创建 ADN loader 失败。
+* Android 按 GroMore 官方工程补齐穿山甲 `TTFileProvider` 和优量汇
+  `GDTFileProvider`，修复官方测试工具中两家 Manifest 检测失败。
+* 移除 Android 原生层的 Release 构建拦截，测试工具入口是否开放由宿主决定。
+* iOS 内置官方 `BUAdTestMeasurement` 预览工具和资源，宿主不再需要修改 Podfile。
+* 清理宿主应用专属说明，插件文档和构建配置保持通用。
+* iOS 成对内置 GDT、百度、Sigmob、快手四家 ADN 的原生 SDK 与 GroMore Adapter。
+* iOS GroMore 升级到 `Ads-CN-Beta 7.8.0.2`，并对齐官方包要求的 GDT、百度、Sigmob、快手 SDK 与 Adapter 版本。
+
+## 1.0.1
+
+* Android 内置优量汇 SDK `4.680.1550` 和匹配的 GroMore Adapter
+  `4.680.1550.1`，与 GroMore 后台导出的 beta Maven 接入配置保持一致。
+* 移除未实际应用、也不能自动引入三方 ADN SDK 的
+  `mediation-auto-adapter` 构建脚本依赖。
+* 补充 Android 第三方 ADN 的接入边界和 Sigmob 本地 AAR 接入说明。
+
 ## 1.0.0
 
 * 新增 HarmonyOS/OpenHarmony 插件平台，实现 GroMore SDK 初始化、隐私控制、

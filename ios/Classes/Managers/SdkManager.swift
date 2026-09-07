@@ -2,7 +2,7 @@ import Foundation
 import Flutter
 import UIKit
 import BUAdSDK
-#if DEBUG && canImport(BUAdTestMeasurement)
+#if DEBUG
 import BUAdTestMeasurement
 #endif
 import AppTrackingTransparency
@@ -770,12 +770,19 @@ class SdkManager: BaseAdManager, SdkManagerProtocol {
      * 从GromoreAdsKitPlugin迁移而来，保持完整功能
      */
     func launchTestTools(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        #if DEBUG && canImport(BUAdTestMeasurement)
+        #if DEBUG
         guard isSdkInitialized else {
             let message = "GroMore SDK尚未初始化，请先调用 initAd"
             logger.logAdError("测试工具", action: "启动", posId: "", errorCode: -1, errorMessage: message)
             eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
             result(createFlutterError(code: AdConstants.ErrorCodes.sdkNotReady, message: message))
+            return
+        }
+        guard lastInitOptions?.useMediation == true else {
+            let message = "GroMore预览工具要求initAd的useMediation为true"
+            logger.logAdError("测试工具", action: "启动", posId: "", errorCode: -1, errorMessage: message)
+            eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
+            result(createFlutterError(code: AdConstants.ErrorCodes.invalidArguments, message: message))
             return
         }
 
@@ -797,19 +804,16 @@ class SdkManager: BaseAdManager, SdkManagerProtocol {
                 return
             }
 
-            // 启动GroMore测试工具（仅Debug可用）
-            BUAdTestMeasurementConfiguration().debugMode = true
+            // 测试工具是静态 framework，必须直接引用官方类型，否则链接器可能把
+            // 只通过字符串反射访问的类裁掉，最终运行时会误报“找不到测试工具”。
+            let configuration = BUAdTestMeasurementConfiguration()
+            configuration.debugMode = true
             BUAdTestMeasurementManager.showTestMeasurement(with: rootViewController)
 
             strongSelf.logger.logAdSuccess("测试工具", action: "启动", posId: "", message: "GroMore测试工具启动成功")
             strongSelf.eventHelper.sendAdEvent("test_tools_launched", posId: "", extra: nil)
             result(true)
         }
-        #elseif DEBUG
-        let message = "未找到GroMore测试工具，请在Debug配置中引入当前SDK生成包里的BUAdTestMeasurement.xcframework和资源Bundle"
-        logger.logWarning(message)
-        eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
-        result(createFlutterError(code: AdConstants.ErrorCodes.showError, message: message))
         #else
         logger.logWarning("测试工具仅在Debug模式下可用")
         eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": "仅Debug构建支持测试工具"])

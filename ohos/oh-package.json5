@@ -7,6 +7,10 @@
   "license": "MIT",
   "dependencies": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
-    "@csj/openadsdk": "7.5.3"
+    "@csj/openadsdk": "7.5.3",
+    "@csj/adapter_ks": "3.0.6-6",
+    "ksadsdk": "3.0.6",
+    "@csj/adapter_gdt": "1.2.0-2",
+    "@gdt/gdt-union-sdk": "file:libs/GDTUnionSDK-default-release.har"
   }
 }

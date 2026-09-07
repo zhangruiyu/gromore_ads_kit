@@ -2,7 +2,6 @@ package com.zhecent.gromore_ads_kit.managers
 
 import android.app.Activity
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.util.Log
 import android.widget.ImageView
@@ -852,15 +851,6 @@ class SdkManager(
      */
     fun launchTestTools(call: MethodCall, result: Result) {
         try {
-            val isDebuggable = applicationContext.applicationInfo.flags and
-                ApplicationInfo.FLAG_DEBUGGABLE != 0
-            if (!isDebuggable) {
-                val message = "GroMore测试工具仅允许在Debug构建中使用"
-                logger.logAdError("测试工具", "启动失败", "", -1, message)
-                result.error(AdConstants.ErrorCodes.SHOW_ERROR, message, null)
-                return
-            }
-
             if (!isSdkInitialized || !TTAdSdk.isSdkReady()) {
                 val message = "GroMore SDK未初始化或尚未完成启动，请先调用 initAd"
                 logger.logAdError("测试工具", "启动失败", "", -1, message)
@@ -884,7 +874,7 @@ class SdkManager(
                 return
             }
 
-            // tools-release.aar 由 GroMore 后台按当前 SDK 配置生成，插件不内置固定旧版本。
+            // 测试工具依赖由插件统一携带，宿主无需再配置。
             val toolClass = Class.forName("com.bytedance.mtesttools.api.TTMediationTestTool")
             val callbackClass = Class.forName("com.bytedance.mtesttools.api.TTMediationTestTool\$ImageCallBack")
             val imageCallback = Proxy.newProxyInstance(
@@ -910,7 +900,7 @@ class SdkManager(
             Log.e(TAG, "启动测试工具失败", e)
             val reason = when (e) {
                 is ClassNotFoundException, is NoClassDefFoundError ->
-                    "未找到GroMore测试工具依赖，请确认已引入 tools-release.aar"
+                    "未找到GroMore测试工具依赖，请检查 mediation-test-tools 依赖是否解析成功"
                 else -> e.message ?: "未知异常"
             }
             logger.logAdError("测试工具", "启动失败", "", -1, reason)
