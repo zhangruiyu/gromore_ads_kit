@@ -65,6 +65,8 @@ android {
 
         // 插件直接携带 GroMore 官方测试工具，宿主无需再单独声明依赖。
         implementation 'com.pangle.cn:mediation-test-tools:7.7.1.6'
+        // 测试工具的 BottomDialog 使用 statusBarBackground，插件独立校验资源时也需要它。
+        implementation 'androidx.coordinatorlayout:coordinatorlayout:1.0.0'
 
         // 优量汇 SDK 和 Adapter 必须成对进入 APK。
         implementation 'com.qq.e.union:union:4.680.1550'
