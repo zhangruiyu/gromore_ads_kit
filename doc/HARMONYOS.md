@@ -1,6 +1,6 @@
 # HarmonyOS 接入
 
-本页对应 `gromore_ads_kit 1.0.1`，核对日期为 2026-09-04。插件使用
+本页对应 `gromore_ads_kit 2.0.0`，核对日期为 2026-09-08。插件使用
 Flutter OHOS `3.41.10-ohos-0.0.2-beta` 和 GroMore HarmonyOS
 `@csj/openadsdk 7.5.3` 验证。
 
@@ -11,8 +11,10 @@ Flutter OHOS `3.41.10-ohos-0.0.2-beta` 和 GroMore HarmonyOS
 - OpenHarmony SDK API 12 或更高版本；
 - HarmonyOS NEXT.0.0.26 或更高版本。
 
-普通 Flutter SDK 没有 `OhosView`。Android/iOS 工程继续导入
-`gromore_ads_kit.dart`；HarmonyOS 工程导入 `gromore_ads_kit_ohos.dart`。
+普通 Flutter SDK 没有 `OhosView`。平台判断通过 `flutter_platform_utils` 的
+`PlatformUtils.isOhos` 完成，核心 Dart 代码不直接引用 `TargetPlatform.ohos`。
+Android/iOS 工程继续导入 `gromore_ads_kit.dart`；HarmonyOS 工程导入
+`gromore_ads_kit_ohos.dart`。
 
 ## OHPM 仓库
 
@@ -22,15 +24,11 @@ Flutter OHOS `3.41.10-ohos-0.0.2-beta` 和 GroMore HarmonyOS
 registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/repository/byted-ohpm/
 ```
 
-插件 HAR 已声明穿山甲核心包、快手 SDK、优量汇 SDK 和对应 GroMore Adapter：
+核心包只声明穿山甲：
 
 ```json5
 "dependencies": {
-  "@csj/openadsdk": "7.5.3",
-  "@csj/adapter_ks": "3.0.6-6",
-  "ksadsdk": "3.0.6",
-  "@csj/adapter_gdt": "1.2.0-2",
-  "@gdt/gdt-union-sdk": "file:libs/GDTUnionSDK-default-release.har"
+  "@csj/openadsdk": "7.5.3"
 }
 ```
 
@@ -46,10 +44,16 @@ registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/reposi
 
 ## 广告网络依赖
 
-插件默认引入穿山甲、快手和优量汇。穿山甲与快手的核心 SDK、Adapter 通过官方
-OHPM 仓库解析；优量汇的核心 SDK 当前不在穿山甲或 OpenHarmony 公共 OHPM 仓库，
-因此插件按 GroMore 官方依赖方式内置 `GDTUnionSDK-default-release.har`，宿主不需要
-另外下载或声明。当前配对版本为：
+核心包默认只引入穿山甲。按需在 Flutter `pubspec.yaml` 增加：
+
+```yaml
+dependencies:
+  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit_gdt: ^1.0.0
+  gromore_ads_kit_ks: ^1.0.0
+```
+
+`gromore_ads_kit_gdt` 使用当前配对版本：
 
 ```json5
 "dependencies": {
@@ -59,7 +63,7 @@ OHPM 仓库解析；优量汇的核心 SDK 当前不在穿山甲或 OpenHarmony 
 }
 ```
 
-插件的 `build-profile.json5` 已同时加入：
+GDT 扩展的 `build-profile.json5` 已同时加入：
 
 ```json5
 "buildOption": {
@@ -74,7 +78,11 @@ OHPM 仓库解析；优量汇的核心 SDK 当前不在穿山甲或 OpenHarmony 
 }
 ```
 
-不要在宿主中重复加入不同版本的优量汇 Adapter 或 SDK，以免动态模块命中错误版本。
+`gromore_ads_kit_ks` 使用 `ksadsdk 3.0.6` 和 `@csj/adapter_ks 3.0.6-6`，并在
+自己的 `runtimeOnly.packages` 中声明两者。百度和 Sigmob 目前没有本插件已验证的
+HarmonyOS SDK/Adapter，因此对应扩展不声明 OHOS 平台。
+
+不要在宿主中重复加入不同版本的 Adapter 或 SDK，以免动态模块命中错误版本。
 
 ## 权限与隐私
 
@@ -143,9 +151,9 @@ await GromoreAdsKit.showSplashAd(
 );
 ```
 
-## 1.0.0 能力边界
+## 2.0.0 能力边界
 
-| 能力 | HarmonyOS 1.0.0 | 说明 |
+| 能力 | HarmonyOS 2.0.0 | 说明 |
 | --- | --- | --- |
 | 初始化/聚合/隐私 | 支持 | `init` 后执行 `start`，映射官方隐私控制器 |
 | 开屏 | 支持 | 加载、专用预加载、展示、兜底、事件、eCPM |
@@ -175,9 +183,8 @@ JSON 字符串不会传给 `setCustomLocalConfig`。
 `File -> Project Structure -> Signing Configs` 配置调试签名。无签名时 Hvigor 可以
 完成 ArkTS 编译，但 `flutter build hap` 最后会因无法签名而返回非零状态。
 
-本仓库没有真实 App ID、代码位、后台瀑布流配置和测试设备权限。发布业务 App 前，
-必须在真机上逐个验证填充、展示、点击、关闭、奖励回调和 eCPM，并分别验证所接的
-穿山甲、快手、广点通 Adapter。
+发布业务 App 前，必须使用自己的 App ID、代码位、后台瀑布流和测试设备，在真机上
+逐个验证填充、展示、关闭、奖励回调和 eCPM，并分别验证所安装的 ADN 扩展。
 
 ## 官方文档
 

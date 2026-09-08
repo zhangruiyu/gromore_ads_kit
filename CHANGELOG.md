@@ -1,25 +1,20 @@
 ## Unreleased
 
-* HarmonyOS 内置优量汇 `@gdt/gdt-union-sdk 1.2.0` HAR 和匹配的 GroMore Adapter
-  `@csj/adapter_gdt 1.2.0-2`，宿主无需再复制 HAR 或配置 `runtimeOnly`。
-* HarmonyOS 内置快手 `ksadsdk 3.0.6` 和匹配的 GroMore Adapter
-  `@csj/adapter_ks 3.0.6-6`，全部通过官方 OHPM 仓库远程依赖。
-* Android 将 `mediation-test-tools:7.7.1.6` 改为插件内置依赖，宿主不再重复配置。
-* Android 的 GroMore、测试工具和四家 ADN Adapter 改为从字节跳动官方 Maven
-  远程引入，移除插件中重复的 AAR/POM；插件会自动为宿主注册该仓库。
-* Android GroMore SDK、测试工具和 ADN Adapter 统一使用 `com.pangle.cn` 正式 Maven
-  坐标，与 GroMore 官方 Android 下载包保持一致。
-* Android 内置 GroMore `7.7.1.6` 官方包配套的百度 SDK `9.4503`，修复只有
-  Adapter、缺少百度原生 SDK 导致的初始化失败。
-* Android 内置 GroMore `7.7.1.6` 官方包配套的快手 SDK `5.3.20.1` 和 Adapter
-  `5.3.20.1.1`，修复快手广告创建 ADN loader 失败。
-* Android 按 GroMore 官方工程补齐穿山甲 `TTFileProvider` 和优量汇
-  `GDTFileProvider`，修复官方测试工具中两家 Manifest 检测失败。
-* 移除 Android 原生层的 Release 构建拦截，测试工具入口是否开放由宿主决定。
-* iOS 内置官方 `BUAdTestMeasurement` 预览工具和资源，宿主不再需要修改 Podfile。
-* 清理宿主应用专属说明，插件文档和构建配置保持通用。
-* iOS 成对内置 GDT、百度、Sigmob、快手四家 ADN 的原生 SDK 与 GroMore Adapter。
-* iOS GroMore 升级到 `Ads-CN-Beta 7.8.0.2`，并对齐官方包要求的 GDT、百度、Sigmob、快手 SDK 与 Adapter 版本。
+* 计划发布 `2.0.0`：核心包只携带 GroMore/穿山甲，优量汇、百度、Sigmob、快手
+  分别拆到 `gromore_ads_kit_gdt`、`gromore_ads_kit_baidu`、
+  `gromore_ads_kit_sigmob`、`gromore_ads_kit_ks`，避免宿主被迫集成所有 ADN。
+* 新增 `gromore_ads_kit_all` 全家桶；只在确实需要四家 ADN 时使用。
+* 官方预览工具拆到 `gromore_ads_kit_debug_tools`。Android 使用
+  `debugImplementation`，Release 不打入测试 AAR；iOS 发布前应移除该扩展包。
+* Android GroMore、测试工具和 ADN Adapter 使用字节跳动正式 Maven 远程坐标；
+  没有验证到公开远程坐标的百度、Sigmob、快手原生 SDK 只保留在各自扩展包中。
+* Android 核心包保留穿山甲 `TTFileProvider`；优量汇的 Provider 和路径资源移动到
+  GDT 扩展包。
+* iOS GroMore 升级到 `Ads-CN-Beta 7.8.0.2`；四家 ADN SDK 与 Adapter 移到各自
+  扩展包。
+* HarmonyOS 核心包只保留 `@csj/openadsdk 7.5.3`；GDT 和快手依赖移动到对应扩展。
+* 使用 `flutter_platform_utils` 的 `PlatformUtils.isOhos` 判断鸿蒙，核心 Dart 代码
+  不再直接引用 `TargetPlatform.ohos`，可由标准版 Flutter 分析和测试。
 
 ## 1.0.1
 

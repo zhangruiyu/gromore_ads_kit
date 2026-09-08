@@ -1,0 +1,49 @@
+group = "com.zhecent.gromore_ads_kit_gdt"
+version = "1.0.0"
+
+buildscript {
+    ext.kotlin_version = "2.2.20"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        maven { url uri("https://artifact.bytedance.com/repository/pangle") }
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "com.zhecent.gromore_ads_kit_gdt"
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = JavaVersion.VERSION_17 }
+    sourceSets { main.java.srcDirs += "src/main/kotlin" }
+    defaultConfig { minSdk = 24 }
+}
+
+dependencies {
+    implementation "com.pangle.cn:mediation-sdk:7.7.1.6"
+    implementation "com.qq.e.union:union:4.680.1550"
+    implementation "com.pangle.cn:mediation-gdt-adapter:4.680.1550.1"
+}

@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "gromore_ads_kit_gdt",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

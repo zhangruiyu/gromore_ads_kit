@@ -3,13 +3,14 @@
 GroMore 的聚合配置和 Android 依赖是两件事。后台启用一个 ADN 后，最终 APK
 还必须同时包含该 ADN 的原生 SDK 和与它匹配的 GroMore Adapter。
 
-当前 GroMore SDK、官方测试工具和下列 Adapter 都由插件通过字节跳动官方 Maven
-仓库引入，宿主不需要再写这些依赖。插件只为没有可靠远程坐标的百度、Sigmob、
-快手指定版本原生 SDK 保留本地 Maven 文件。
+`gromore_ads_kit` 核心包只携带 GroMore/穿山甲。官方测试工具和各 ADN 已拆成独立
+Flutter 扩展包；宿主安装哪个扩展，最终 APK 才会包含哪家 SDK。各 Adapter 通过
+字节跳动官方 Maven 仓库引入，只有没有验证到可靠远程坐标的百度、Sigmob、快手
+指定版本原生 SDK 在对应扩展包中保留本地 Maven 文件。
 
 ## 优量汇
 
-插件 `1.0.1` 已内置以下依赖，宿主不要重复添加：
+安装 `gromore_ads_kit_gdt` 后自动加入：
 
 ```groovy
 implementation 'com.qq.e.union:union:4.680.1550'
@@ -19,35 +20,35 @@ implementation 'com.pangle.cn:mediation-gdt-adapter:4.680.1550.1'
 如果其他应用从 GroMore 后台下载的生成包指定了不同版本，应同时替换 SDK 和
 Adapter，不能只改其中一个。
 
-插件已自动声明官方工程要求的 `com.qq.e.comm.GDTFileProvider` 和固定下载缓存
+GDT 扩展包自动声明官方工程要求的 `com.qq.e.comm.GDTFileProvider` 和固定下载缓存
 路径。宿主无需重复声明；最终合并 Manifest 中缺少该 Provider 时，GroMore 官方
 测试工具会把优量汇的 Manifest 状态标红。
 
 ## 穿山甲
 
-插件已经引入 `com.pangle.cn:mediation-sdk:7.7.1.6`。这个融合 SDK 包含穿山甲
+核心包已经引入 `com.pangle.cn:mediation-sdk:7.7.1.6`。这个融合 SDK 包含穿山甲
 能力，穿山甲没有需要单独添加的 Adapter。
 
-插件已自动声明官方工程要求的 `com.bytedance.sdk.openadsdk.TTFileProvider` 和
+核心包自动声明官方工程要求的 `com.bytedance.sdk.openadsdk.TTFileProvider` 和
 文件路径资源。宿主无需重复声明；GroMore 融合 SDK 自带的其他 Provider 不能替代
 测试工具检查的这一项。
 
 ## 百度
 
-插件 `1.0.1` 已内置 GroMore `7.7.1.6` 官方 Android 下载包中的百度 SDK
-`9.4503`，并配套以下 Adapter：
+安装 `gromore_ads_kit_baidu` 后，会加入 GroMore `7.7.1.6` 官方 Android 下载包
+指定的百度 SDK `9.4503` 和 Adapter：
 
 ```groovy
 implementation 'com.baidu.local:mobads:9.4503'
 implementation 'com.pangle.cn:mediation-baidu-adapter:9.4503.1'
 ```
 
-`com.baidu.local` 是插件内部 Maven 目录里的本地坐标。GroMore Adapter 不会自动
+`com.baidu.local` 是百度扩展包内部 Maven 目录里的本地坐标。GroMore Adapter 不会自动
 传递百度原生 SDK；只添加 Adapter 会在初始化时出现 `AdSettings` 类找不到。
 
 ## Sigmob
 
-插件 `1.0.1` 已内置以下相互匹配的依赖：
+安装 `gromore_ads_kit_sigmob` 后自动加入以下相互匹配的依赖：
 
 ```groovy
 implementation 'com.sigmob.local:windad:4.25.14'
@@ -55,7 +56,7 @@ implementation 'com.sigmob.local:windad-common:2.0.1'
 implementation 'com.pangle.cn:mediation-sigmob-adapter:4.25.14.1'
 ```
 
-`com.sigmob.local` 是插件内部 Maven 目录里的本地坐标，不会从公网下载。WindAd AAR
+`com.sigmob.local` 是 Sigmob 扩展包内部 Maven 目录里的本地坐标，不会从公网下载。WindAd AAR
 已自带 `sigmob_provider_paths.xml`、Manifest 组件和混淆规则，宿主不要重复复制。其他
 应用若使用不同的 GroMore 生成包，必须同时替换 WindAd、common 和 Adapter，不能只
 升级其中一个。
@@ -72,15 +73,15 @@ MSA OAID SDK。OAID 组件需要从 MSA 官方取得，并为应用包名和签�
 
 ## 快手
 
-插件已内置 GroMore `7.7.1.6` 官方 Android 生成包中的快手原生 SDK 和匹配的
-Adapter：
+安装 `gromore_ads_kit_ks` 后，会加入 GroMore `7.7.1.6` 官方 Android 生成包中的
+快手原生 SDK 和匹配的 Adapter：
 
 ```groovy
 implementation 'com.kuaishou.local:kssdk-ad:5.3.20.1'
 implementation 'com.pangle.cn:mediation-ks-adapter:5.3.20.1.1'
 ```
 
-`com.kuaishou.local` 是插件内部 Maven 目录里的本地坐标。快手 Adapter 不会自动
+`com.kuaishou.local` 是快手扩展包内部 Maven 目录里的本地坐标。快手 Adapter 不会自动
 传递快手原生 SDK；只接 Adapter 时，GroMore 会提示 `ks创建失败，请检查adapter是否接入`
 或 `create adn loader fail`。其他应用无需在宿主工程重复声明这两个依赖。
 

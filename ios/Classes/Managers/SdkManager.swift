@@ -2,9 +2,6 @@ import Foundation
 import Flutter
 import UIKit
 import BUAdSDK
-#if DEBUG
-import BUAdTestMeasurement
-#endif
 import AppTrackingTransparency
 import AdSupport
 
@@ -29,11 +26,6 @@ protocol SdkManagerProtocol {
     func preload(_ call: FlutterMethodCall, result: @escaping FlutterResult)
 
     /**
-     * 启动测试工具
-     */
-    func launchTestTools(_ call: FlutterMethodCall, result: @escaping FlutterResult)
-
-    /**
      * 销毁SDK管理器
      */
     func destroy()
@@ -41,7 +33,7 @@ protocol SdkManagerProtocol {
 
 /**
  * SDK管理器实现类
- * 负责GroMore SDK的初始化、配置、预加载和测试工具管理
+ * 负责GroMore SDK的初始化、配置和预加载
  * 从主插件中分离出来，实现职责分离，与Android版本架构保持一致
  */
 class SdkManager: BaseAdManager, SdkManagerProtocol {
@@ -761,65 +753,6 @@ class SdkManager: BaseAdManager, SdkManagerProtocol {
             result.append(bannerView)
         }
         return result
-    }
-
-    // MARK: - 测试工具
-
-    /**
-     * 启动测试工具
-     * 从GromoreAdsKitPlugin迁移而来，保持完整功能
-     */
-    func launchTestTools(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        #if DEBUG
-        guard isSdkInitialized else {
-            let message = "GroMore SDK尚未初始化，请先调用 initAd"
-            logger.logAdError("测试工具", action: "启动", posId: "", errorCode: -1, errorMessage: message)
-            eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
-            result(createFlutterError(code: AdConstants.ErrorCodes.sdkNotReady, message: message))
-            return
-        }
-        guard lastInitOptions?.useMediation == true else {
-            let message = "GroMore预览工具要求initAd的useMediation为true"
-            logger.logAdError("测试工具", action: "启动", posId: "", errorCode: -1, errorMessage: message)
-            eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
-            result(createFlutterError(code: AdConstants.ErrorCodes.invalidArguments, message: message))
-            return
-        }
-
-        DispatchQueue.main.async { [weak self] in
-            guard let strongSelf = self else {
-                let message = "SDK管理器实例不可用"
-                result(FlutterError(code: AdConstants.ErrorCodes.showError, message: message, details: nil))
-                return
-            }
-
-            strongSelf.logger.logAdRequest("测试工具", posId: "", params: [:])
-            strongSelf.logger.logInfo("启动GroMore测试工具")
-
-            guard let rootViewController = strongSelf.getCurrentViewController() else {
-                let message = "无法获取根视图控制器"
-                strongSelf.logger.logAdError("测试工具", action: "启动", posId: "", errorCode: -1, errorMessage: message)
-                strongSelf.eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": message])
-                result(strongSelf.createFlutterError(code: AdConstants.ErrorCodes.noRootController, message: message))
-                return
-            }
-
-            // 测试工具是静态 framework，必须直接引用官方类型，否则链接器可能把
-            // 只通过字符串反射访问的类裁掉，最终运行时会误报“找不到测试工具”。
-            let configuration = BUAdTestMeasurementConfiguration()
-            configuration.debugMode = true
-            BUAdTestMeasurementManager.showTestMeasurement(with: rootViewController)
-
-            strongSelf.logger.logAdSuccess("测试工具", action: "启动", posId: "", message: "GroMore测试工具启动成功")
-            strongSelf.eventHelper.sendAdEvent("test_tools_launched", posId: "", extra: nil)
-            result(true)
-        }
-        #else
-        logger.logWarning("测试工具仅在Debug模式下可用")
-        eventHelper.sendAdEvent("test_tools_failed", posId: "", extra: ["reason": "仅Debug构建支持测试工具"])
-        result(createFlutterError(code: AdConstants.ErrorCodes.debugOnly,
-                                 message: "测试工具仅在Debug构建中可用"))
-        #endif
     }
 
     // MARK: - 生命周期管理

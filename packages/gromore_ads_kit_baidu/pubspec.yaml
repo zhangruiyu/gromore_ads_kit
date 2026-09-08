@@ -1,0 +1,33 @@
+name: gromore_ads_kit_baidu
+description: GroMore 百度广告可选适配包，供 gromore_ads_kit 按需接入百度广告。
+version: 1.0.0
+homepage: https://github.com/zhangruiyu/gromore_ads_kit
+repository: https://github.com/zhangruiyu/gromore_ads_kit/tree/main/packages/gromore_ads_kit_baidu
+issue_tracker: https://github.com/zhangruiyu/gromore_ads_kit/issues
+
+topics:
+  - ads
+  - gromore
+  - baidu
+  - mediation
+
+environment:
+  sdk: ^3.11.4
+  flutter: '>=3.41.6'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gromore_ads_kit: ^2.0.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.zhecent.gromore_ads_kit_baidu
+        pluginClass: GromoreAdsKitBaiduPlugin
+      ios:
+        pluginClass: GromoreAdsKitBaiduPlugin

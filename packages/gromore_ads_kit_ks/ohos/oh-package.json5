@@ -1,0 +1,14 @@
+{
+  "name": "gromore_ads_kit_ks",
+  "version": "1.0.0",
+  "description": "GroMore Kuaishou adapter Flutter plugin for HarmonyOS.",
+  "main": "index.ets",
+  "author": "zhangruiyu",
+  "license": "MIT",
+  "dependencies": {
+    "@ohos/flutter_ohos": "file:./har/flutter.har",
+    "@csj/openadsdk": "7.5.3",
+    "@csj/adapter_ks": "3.0.6-6",
+    "ksadsdk": "3.0.6"
+  }
+}

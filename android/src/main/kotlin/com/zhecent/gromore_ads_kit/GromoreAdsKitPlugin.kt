@@ -147,9 +147,6 @@ class GromoreAdsKitPlugin :
             "preload" -> {
                 sdkManager.preload(call, result)
             }
-            "launchTestTools" -> {
-                sdkManager.launchTestTools(call, result)
-            }
             "isReady" -> {
                 handleIsReady(call, result)
             }
@@ -326,6 +323,6 @@ class GromoreAdsKitPlugin :
         result.success(info)
     }
 
-    // 注意：initAd、preload、launchTestTools等方法已移动到SdkManager中
+    // 注意：initAd、preload等方法已移动到SdkManager中
     // 主插件现在只负责路由分发，不包含具体的SDK操作逻辑
 }

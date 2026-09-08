@@ -21,17 +21,12 @@ allprojects {
     }
 }
 
-// GroMore 核心、测试工具和 Adapter 直接从字节跳动官方 Maven 下载。
-// 百度、Sigmob、快手的指定原生 SDK 仍使用插件随附版本，避免与 Adapter 版本不匹配。
+// 核心包只接入 GroMore。第三方 ADN 和官方测试工具由独立扩展包按需提供。
 def pangleRepository = uri("https://artifact.bytedance.com/repository/pangle")
-def bundledAdnRepository = uri("$projectDir/maven")
 rootProject.allprojects {
     repositories {
         maven {
             url pangleRepository
-        }
-        maven {
-            url bundledAdnRepository
         }
     }
 }
@@ -67,29 +62,7 @@ android {
         implementation 'com.squareup.okhttp3:okhttp:3.12.1'
         implementation "com.pangle.cn:mediation-sdk:7.7.1.6"
 
-        // GroMore 官方测试工具通过字节跳动 Maven 引入，宿主无需再单独声明依赖。
-        implementation 'com.pangle.cn:mediation-test-tools:7.7.1.6'
-        // 测试工具的 BottomDialog 使用 statusBarBackground，插件独立校验资源时也需要它。
-        implementation 'androidx.coordinatorlayout:coordinatorlayout:1.0.0'
-
-        // 优量汇 SDK 和 Adapter 必须成对进入 APK。
-        implementation 'com.qq.e.union:union:4.680.1550'
-        implementation 'com.pangle.cn:mediation-gdt-adapter:4.680.1550.1'
-
-        // 百度 SDK 和 Adapter 必须成对进入 APK；使用 GroMore 7.7.1.6 官方包里的 9.4503。
-        implementation 'com.baidu.local:mobads:9.4503'
-        implementation 'com.pangle.cn:mediation-baidu-adapter:9.4503.1'
-
-        // Sigmob SDK、公共库和 Adapter 必须使用相互匹配的版本。
-        implementation 'com.sigmob.local:windad:4.25.14'
-        implementation 'com.sigmob.local:windad-common:2.0.1'
-        implementation 'com.pangle.cn:mediation-sigmob-adapter:4.25.14.1'
-
-        // 快手 SDK 和 Adapter 必须成对进入 APK；版本来自 GroMore 7.7.1.6 官方生成包。
-        implementation 'com.kuaishou.local:kssdk-ad:5.3.20.1'
-        implementation 'com.pangle.cn:mediation-ks-adapter:5.3.20.1.1'
-
-        // 用于加载 GroMore 测试工具里的图片。
+        // 信息流原生渲染需要加载广告图片。
         implementation 'com.github.bumptech.glide:glide:4.16.0'
 
         testImplementation("org.jetbrains.kotlin:kotlin-test")

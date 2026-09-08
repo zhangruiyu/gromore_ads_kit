@@ -1,0 +1,25 @@
+# 核心包发布时不携带 monorepo 中的独立扩展包。
+/packages/
+
+# 开发和构建产物。
+/.dart_tool/
+/build/
+/coverage/
+/pubspec.lock
+/.flutter-plugins-dependencies
+/.idea/
+*.iml
+*.log
+.DS_Store
+
+# example 自己的缓存和原生产物。
+/example/.dart_tool/
+/example/build/
+/example/android/.gradle/
+/example/ios/Pods/
+/example/ios/.symlinks/
+/example/ohos/build/
+
+# HarmonyOS 插件编译产物和下载缓存。
+/ohos/build/
+/ohos/oh_modules/

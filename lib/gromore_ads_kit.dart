@@ -748,11 +748,11 @@ class GromoreAdsKit {
   /// - **iOS**:
   ///   - 仅在Debug构建中可用(`#if DEBUG`),Release构建自动禁用
   ///   - 要求iOS 13.0或更高版本
-  ///   - 插件已携带匹配版本的`BUAdTestMeasurement.xcframework`和资源Bundle
-  ///   - 宿主无需修改Podfile；二进制会随插件进入各构建类型
+  ///   - 调试期间需要额外依赖`gromore_ads_kit_debug_tools`
+  ///   - 发布前移除扩展包，避免测试二进制随 CocoaPods 进入 Release
   /// - **Android**:
-  ///   - 插件已直接携带对应版本的测试工具依赖，宿主无需额外配置
-  ///   - 插件原生层不限制构建类型，是否开放入口由宿主应用决定
+  ///   - 调试期间需要额外依赖`gromore_ads_kit_debug_tools`
+  ///   - 测试工具 AAR 使用`debugImplementation`，不会进入 Release 变体
   ///
   /// **测试工具功能**:
   /// - ✅ SDK接入检测(融合SDK、各ADN SDK、Adapter版本)
@@ -786,7 +786,7 @@ class GromoreAdsKit {
   ///
   /// @returns 启动成功返回`true`,失败返回`false`或抛出异常
   ///
-  /// @throws 当SDK未初始化、缺少依赖或平台不支持时抛出异常
+  /// @throws 当缺少调试扩展包、SDK未初始化或平台不支持时抛出异常
   ///
   /// @see [initAd] SDK初始化方法
   static Future<bool> launchTestTools() {

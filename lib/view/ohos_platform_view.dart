@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_platform_utils/flutter_platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -14,9 +15,7 @@ typedef GromoreOhosPlatformViewBuilder =
 GromoreOhosPlatformViewBuilder? _ohosPlatformViewBuilder;
 
 /// 当前 Flutter 是否运行在 HarmonyOS/OpenHarmony。
-///
-/// 这里比较平台名称，不直接引用 [TargetPlatform.ohos]，避免影响普通 Flutter SDK。
-bool get isGromoreOhosPlatform => defaultTargetPlatform.name == 'ohos';
+bool get isGromoreOhosPlatform => PlatformUtils.isOhos;
 
 /// 注册 Flutter OHOS 分支提供的 OhosView 构建器。
 void registerGromoreOhosPlatformViewBuilder(

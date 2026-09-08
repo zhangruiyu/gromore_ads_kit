@@ -1,0 +1,14 @@
+{
+  "name": "gromore_ads_kit_gdt",
+  "version": "1.0.0",
+  "description": "GroMore GDT adapter Flutter plugin for HarmonyOS.",
+  "main": "index.ets",
+  "author": "zhangruiyu",
+  "license": "MIT",
+  "dependencies": {
+    "@ohos/flutter_ohos": "file:./har/flutter.har",
+    "@csj/openadsdk": "7.5.3",
+    "@csj/adapter_gdt": "1.2.0-2",
+    "@gdt/gdt-union-sdk": "file:libs/GDTUnionSDK-default-release.har"
+  }
+}

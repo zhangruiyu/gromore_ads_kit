@@ -8,12 +8,18 @@ import 'gromore_ads_kit_platform_interface.dart';
 class MethodChannelGromoreAdsKit extends GromoreAdsKitPlatform {
   MethodChannelGromoreAdsKit()
     : _methodChannel = const MethodChannel(_methodChannelName),
+      _debugToolsMethodChannel = const MethodChannel(
+        _debugToolsMethodChannelName,
+      ),
       _eventChannel = const EventChannel(_eventChannelName);
 
   static const String _methodChannelName = 'gromore_ads_kit';
   static const String _eventChannelName = 'gromore_ads_kit_event';
+  static const String _debugToolsMethodChannelName =
+      'gromore_ads_kit_debug_tools';
 
   final MethodChannel _methodChannel;
+  final MethodChannel _debugToolsMethodChannel;
   final EventChannel _eventChannel;
 
   Stream<Map<String, dynamic>>? _eventStream;
@@ -124,8 +130,17 @@ class MethodChannelGromoreAdsKit extends GromoreAdsKitPlatform {
   }
 
   @override
-  Future<bool> launchTestTools() {
-    return _invokeBool('launchTestTools');
+  Future<bool> launchTestTools() async {
+    try {
+      final bool? value = await _debugToolsMethodChannel.invokeMethod<bool>(
+        'launchTestTools',
+      );
+      return value ?? false;
+    } on MissingPluginException {
+      throw MissingPluginException(
+        '未安装 gromore_ads_kit_debug_tools。官方测试工具请仅在调试期间按需接入。',
+      );
+    }
   }
 
   @override

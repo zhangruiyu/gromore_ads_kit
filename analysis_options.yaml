@@ -7,3 +7,5 @@ analyzer:
   # Android/iOS 用户仍然可以正常解析和编译主入口。
   exclude:
     - lib/gromore_ads_kit_ohos.dart
+    # 子包各自有独立的 pubspec 和分析配置，避免核心包用错误的 package_config 分析。
+    - packages/**

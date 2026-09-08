@@ -1,7 +1,7 @@
 # GroMore 官网能力核对
 
 核对日期：2026-09-01。基线为 Android GroMore `7.7.1.6`、iOS Ads-CN
-`7.7.0.8`、HarmonyOS `@csj/openadsdk 7.5.3`。
+`7.8.0.2`、HarmonyOS `@csj/openadsdk 7.5.3`。
 
 ## 通用插件能力已经完成
 
@@ -43,7 +43,7 @@ GroMore 7.2 起已经下线激励视频“再看一次”。插件不调用被�
 
 3. **iOS 文档与当前二进制头文件不一致的字段**
 
-   官网隐私页提到 CAID 开关，但 Ads-CN `7.7.0.8` 当前公开头文件只提供
+   官网隐私页提到 CAID 开关，但 Ads-CN `7.8.0.2` 当前公开头文件只提供
    `forbiddenIDFA`，没有可编译的 `forbiddenCAID` 属性。插件不会通过未公开 selector
    猜测调用；后续 SDK 公开该字段后再按头文件补入。
 
@@ -56,7 +56,7 @@ GroMore 7.2 起已经下线激励视频“再看一次”。插件不调用被�
 
 5. **HarmonyOS 高级展示能力**
 
-   HarmonyOS `1.0.0` 已打通 Feed/Draw 模板与自渲染混出，但开屏底部 Logo、
+   当前 HarmonyOS 实现已打通 Feed/Draw 模板与自渲染混出，但开屏底部 Logo、
    自定义关闭按钮尚未接入。鸿蒙 GroMore 聚合维度暂不支持自渲染 Banner；
    插件只在直连穿山甲时通过 `harmonyNativeRender` 显式开启。`AdSlotBuilder` 没有
    Android/iOS 的全部高级 setter，因此音量、场景 ID、竞价回传等参数不伪造支持。
@@ -68,8 +68,8 @@ GroMore 7.2 起已经下线激励视频“再看一次”。插件不调用被�
 
 7. **HarmonyOS 可选 ADN 与真机验收**
 
-   基础插件只带 `@csj/openadsdk`。快手和广点通需要宿主加入匹配的 SDK、Adapter、
-   `runtimeOnly` 配置及真实后台瀑布流，并在签名真机上逐个验证。详见
+   基础插件只带 `@csj/openadsdk`。快手和广点通通过独立扩展包加入匹配的 SDK、
+   Adapter 和 `runtimeOnly` 配置，仍需配置真实后台瀑布流并在签名真机上逐个验证。详见
    [`HARMONYOS.md`](HARMONYOS.md)。
 
 ## 官方依据

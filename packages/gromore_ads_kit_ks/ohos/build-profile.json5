@@ -1,0 +1,18 @@
+{
+  "apiType": "stageMode",
+  "buildOption": {
+    "arkOptions": {
+      "runtimeOnly": {
+        "packages": [
+          "@csj/adapter_ks",
+          "ksadsdk"
+        ]
+      }
+    }
+  },
+  "targets": [
+    {
+      "name": "default"
+    }
+  ]
+}

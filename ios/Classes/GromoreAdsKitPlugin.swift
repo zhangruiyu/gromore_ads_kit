@@ -116,10 +116,6 @@ public class GromoreAdsKitPlugin: NSObject, FlutterPlugin, FlutterStreamHandler 
         case "destroyBannerAd":
             bannerAdManager.destroy(call, result: result)
 
-        // 测试工具（路由到SdkManager）
-        case "launchTestTools":
-            sdkManager.launchTestTools(call, result: result)
-
         default:
             result(FlutterMethodNotImplemented)
         }

@@ -2,9 +2,10 @@
 
 GroMore 广告聚合 Flutter 插件，支持 Android、iOS 和 HarmonyOS/OpenHarmony。
 
-支持开屏、插屏、Banner、激励视频、信息流和 Draw 信息流、
-广告预加载、完整隐私控制、waterfall 诊断、事件/错误/奖励/eCPM 回调，以及
-GroMore 官方预览测试工具。
+核心包支持开屏、插屏、Banner、激励视频、信息流和 Draw 信息流、广告预加载、
+完整隐私控制、waterfall 诊断以及事件/错误/奖励/eCPM 回调。优量汇、百度、
+Sigmob、快手和 GroMore 官方测试工具均拆成独立扩展包，业务 App 只安装真正使用的
+平台，避免无关 SDK 增大包体、权限和隐私合规范围。
 
 本项目基于
 [`Xlxinxi/flutter_gromore_ads`](https://github.com/Xlxinxi/flutter_gromore_ads)
@@ -13,7 +14,7 @@ GroMore 官方预览测试工具。
 
 ## 当前版本
 
-- 插件 `1.0.1`
+- 核心插件 `2.0.0`
 - Flutter `>=3.41.6`；Android/iOS 使用 FVM Flutter `3.41.6` 验证，
   HarmonyOS 使用 FVM Flutter `3.41.10-ohos-0.0.2-beta` 验证
 - Dart `^3.11.4`
@@ -28,37 +29,125 @@ GroMore 官方预览测试工具。
 和 GroMore 官方接入文档。Android、iOS 和 HarmonyOS 的官方 SDK 版本并不一致，
 不能把某个平台的 Adapter 版本照搬到另一个平台。
 
-## 添加依赖
+## 快速接入
 
-本地开发时，在业务 App 的 `pubspec.yaml` 中添加：
+### 1. 在 GroMore 后台准备配置
+
+先为 Android、iOS、HarmonyOS 分别创建应用并取得各自的 GroMore App ID。然后创建
+聚合广告位，在广告位的瀑布流中添加准备使用的 ADN 代码位。
+
+注意区分两个 ID：
+
+- `GromoreAdsKit.initAd()` 传应用的 **App ID**。
+- 加载开屏、激励视频等广告时传聚合广告位的 **代码位 ID**。
+
+代码位 ID 是否以 `1` 开头不能用来判断它是不是 GroMore 广告位，应以后台显示的
+广告位类型和“是否用于 GroMore”配置为准。
+
+### 2. 选择依赖方式
+
+| 包名 | Android | iOS | HarmonyOS | 用途 |
+| --- | --- | --- | --- | --- |
+| `gromore_ads_kit` | 支持 | 支持 | 支持 | 核心包，只包含 GroMore/穿山甲 |
+| `gromore_ads_kit_gdt` | 支持 | 支持 | 支持 | 加入优量汇 SDK 和 Adapter |
+| `gromore_ads_kit_baidu` | 支持 | 支持 | 暂不支持 | 加入百度 SDK 和 Adapter |
+| `gromore_ads_kit_sigmob` | 支持 | 支持 | 暂不支持 | 加入 Sigmob SDK 和 Adapter |
+| `gromore_ads_kit_ks` | 支持 | 支持 | 支持 | 加入快手 SDK 和 Adapter |
+| `gromore_ads_kit_all` | 支持 | 支持 | 支持 | 一次安装上述核心包和四个 ADN 扩展 |
+| `gromore_ads_kit_debug_tools` | Debug | Debug | 不支持 | GroMore 官方预览测试工具 |
+
+只使用 GroMore/穿山甲时添加核心包：
 
 ```yaml
 dependencies:
-  gromore_ads_kit:
-    path: ../gromore_ads_kit
+  gromore_ads_kit: ^2.0.0
 ```
 
-然后执行 `flutter pub get`。
+按实际需要添加 ADN 扩展。下面的示例会接入优量汇和 Sigmob，不会把百度和快手
+打进 App：
+
+```yaml
+dependencies:
+  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit_gdt: ^1.0.0     # 优量汇
+  gromore_ads_kit_sigmob: ^1.0.0  # Sigmob
+```
+
+其他 ADN 按需添加：
+
+```yaml
+dependencies:
+  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit_baidu: ^1.0.0   # 百度
+  gromore_ads_kit_ks: ^1.0.0      # 快手
+```
+
+确实需要优量汇、百度、Sigmob 和快手四家平台时，可以只使用全家桶：
+
+```yaml
+dependencies:
+  gromore_ads_kit_all: ^2.0.0
+```
+
+全家桶已经依赖核心包，不要再重复添加 `gromore_ads_kit`。它也不会携带官方测试
+工具。
+
+扩展包只负责把对应平台的原生 SDK、GroMore Adapter、清单和资源带入宿主，业务层
+不需要单独初始化每一家 ADN，也不需要 import 每个扩展包。按需依赖时统一使用：
+
+```dart
+import 'package:gromore_ads_kit/gromore_ads_kit.dart';
+```
+
+只依赖全家桶时使用它导出的统一入口：
+
+```dart
+import 'package:gromore_ads_kit_all/gromore_ads_kit_all.dart';
+```
+
+修改依赖后执行：
+
+```shell
+flutter pub get
+```
+
+iOS 若没有在后续 Flutter 构建中自动安装 Pod，可在 `ios` 目录手动执行
+`pod install`。各扩展包发布到 pub.dev 后使用上述版本号；在本仓库联调时可临时
+改成对应 `packages/` 下的 path 依赖。
+
+### 3. 保持后台与客户端一致
+
+GroMore 后台开启某家 ADN，不代表它的原生 SDK 已经自动进入 App。客户端必须安装
+对应扩展包：
+
+- 后台只启用穿山甲：只安装核心包。
+- 后台启用穿山甲和优量汇：安装核心包与 `gromore_ads_kit_gdt`。
+- 后台启用多家 ADN：逐个安装对应扩展，或者使用全家桶。
+- 后台已经停用某家 ADN：可以移除对应扩展包，再重新构建以缩小包体和合规范围。
+
+如果后台启用了某家 ADN，但客户端没有安装对应扩展，GroMore 初始化日志会报告该
+SDK 或 Adapter 未接入，而且该 ADN 无法参与本次瀑布流。反过来，安装了扩展包但
+后台没有配置它，不会自动请求该平台广告。
 
 ## Android 配置
 
 ### Maven 依赖
 
-插件通过字节跳动官方 Maven 仓库引入 GroMore `7.7.1.6`、官方测试工具和当前配套
-ADN Adapter，并自动把仓库注册给宿主 Android 工程。使用者不需要在
+核心插件通过字节跳动官方 Maven 仓库引入 GroMore `7.7.1.6`，并自动把仓库注册给
+宿主 Android 工程。使用者不需要在
 `settings.gradle` 或项目级 `build.gradle` 重复添加字节跳动 Maven 仓库，也不需要
 重复引入 `okhttp:3.12.1`。
 
-如果以后更换 GroMore 或 Adapter 版本，只需要更新 `android/build.gradle` 中的远程
-坐标。百度、Sigmob、快手的原生 SDK 仍来自插件 `android/maven`，升级这些 SDK 时
-需要同时替换本地 AAR/POM，并确保与 Adapter 版本匹配。
+每个 ADN 扩展包自行声明匹配的 SDK 和 Adapter。升级时应同时更新同一扩展包里的
+二者；百度、Sigmob、快手当前指定版本没有经过验证的公开原生 SDK Maven 坐标，
+所以只在它们各自的扩展包中保留对应 AAR/POM。
 
 ### 第三方 ADN
 
 GroMore 后台勾选某个广告网络，只会把该网络写进聚合配置，不会自动把它的原生
 SDK 和 Adapter 装进 APK。二者版本不匹配时，初始化日志会提示“未按要求接入”。
 
-本插件 `1.0.1` 已内置以下优量汇依赖，宿主不用重复添加：
+安装 `gromore_ads_kit_gdt` 后自动加入：
 
 ```groovy
 implementation 'com.qq.e.union:union:4.680.1550'
@@ -68,19 +157,20 @@ implementation 'com.pangle.cn:mediation-gdt-adapter:4.680.1550.1'
 融合 SDK `mediation-sdk` 已经包含穿山甲能力，穿山甲没有单独的 Adapter 依赖。
 初始化日志里笼统列出 `pangle`，不等于还需要再引入一份穿山甲 SDK。
 
-插件同时按照 GroMore 官方 Android 工程自动声明穿山甲 `TTFileProvider`、优量汇
-`GDTFileProvider` 及其路径资源，宿主无需再复制这两段 Manifest 配置。
+核心包声明穿山甲 `TTFileProvider`；`gromore_ads_kit_gdt` 声明优量汇
+`GDTFileProvider` 及其路径资源，宿主无需重复配置。
 
-百度 Adapter 不会自动传递百度原生 SDK。插件已经内置 GroMore `7.7.1.6` 官方
-Android 包指定的百度 SDK `9.4503` 和 Adapter `9.4503.1`；宿主不需要重复添加。
+百度 Adapter 不会自动传递百度原生 SDK。安装 `gromore_ads_kit_baidu` 后，会配套
+加入 GroMore `7.7.1.6` 官方包指定的百度 SDK `9.4503` 和 Adapter `9.4503.1`。
 
-Sigmob 不能只加 Adapter。本插件已经配套内置 WindAd SDK、common SDK 和 Sigmob
-Adapter；若需要更换版本，应以 GroMore 后台为当前应用生成的 Android SDK 包为准，
-同时替换这三项依赖，不能只升级其中一项。详细步骤见
+Sigmob 不能只加 Adapter。`gromore_ads_kit_sigmob` 配套加入 WindAd SDK、common
+SDK 和 Sigmob Adapter；若需要更换版本，应以 GroMore 后台为当前应用生成的
+Android SDK 包为准，同时替换这三项依赖。详细步骤见
 [`doc/ANDROID_ADN.md`](doc/ANDROID_ADN.md)。
 
-快手同样需要原生 SDK 和 Adapter 成对接入。插件已内置 GroMore `7.7.1.6` 官方
-生成包指定的快手 SDK `5.3.20.1` 和 Adapter `5.3.20.1.1`，宿主无需重复添加。
+快手同样需要原生 SDK 和 Adapter 成对接入。安装 `gromore_ads_kit_ks` 后会加入
+GroMore `7.7.1.6` 官方生成包指定的快手 SDK `5.3.20.1` 和 Adapter
+`5.3.20.1.1`。
 
 插件不再依赖 `mediation-auto-adapter`：它不能替宿主下载三方 ADN SDK，而且在
 Flutter 插件 module 中没有应用到宿主 App，不能解决运行时 Adapter 缺失。
@@ -109,23 +199,22 @@ Flutter 插件 module 中没有应用到宿主 App，不能解决运行时 Adapt
 
 ## iOS 配置
 
-`0.2.0` 起最低支持 iOS 13。插件通过 CocoaPods 引入
-`Ads-CN-Beta/CSJMediation 7.8.0.2`。官方预览工具和所需资源由插件统一携带。
+最低支持 iOS 13。核心插件通过 CocoaPods 引入
+`Ads-CN-Beta/CSJMediation 7.8.0.2`，不再默认携带第三方 ADN 和测试工具。
 
 ### 第三方 ADN
 
-插件已经把 GroMore iOS 文档列出的四家通用 ADN 的原生 SDK 和 Adapter 配对，
-宿主不用再手工下载：
+安装对应扩展包后，会加入 GroMore iOS 文档指定的原生 SDK 与 Adapter：
 
-| ADN | 原生 SDK | GroMore Adapter |
+| 扩展包 | 原生 SDK | GroMore Adapter |
 | --- | --- | --- |
-| 优量汇/GDT | `GDTMobSDK 4.15.90` | `CSJMGdtAdapter 4.15.90.1` |
-| 百度 | `BaiduMobAdSDK 10.050` | `CSJMBaiduAdapter 10.050.3` |
-| Sigmob | `SigmobAd-iOS 5.1.2` | `CSJMSigmobAdapter 5.1.2.1` |
-| 快手 | `KSAdSDK 5.5.10.1` | `CSJMKsAdapter 5.5.10.1.1` |
+| `gromore_ads_kit_gdt` | `GDTMobSDK 4.15.90` | `CSJMGdtAdapter 4.15.90.1` |
+| `gromore_ads_kit_baidu` | `BaiduMobAdSDK 10.050` | `CSJMBaiduAdapter 10.050.3` |
+| `gromore_ads_kit_sigmob` | `SigmobAd-iOS 5.1.2` | `CSJMSigmobAdapter 5.1.2.1` |
+| `gromore_ads_kit_ks` | `KSAdSDK 5.5.10.1` | `CSJMKsAdapter 5.5.10.1.1` |
 
 原生 SDK 由 CocoaPods 官方索引下载；GroMore Adapter 来自穿山甲官方静态包，
-随插件保存在 `ios/Vendor`，并保留原始 MIT LICENSE。这里只完成客户端能力接入，
+随各自扩展包保存在 `ios/Vendor`，并保留原始 LICENSE。这里只完成客户端能力接入，
 实际请求哪家广告仍由 GroMore 后台的广告网络、代码位和瀑布流配置决定。
 
 这些版本来自 GroMore `7.8.0.2` 官方聚合包及其示例 Podfile，原生 SDK 与 Adapter
@@ -182,8 +271,10 @@ GroMore 官方说明广告主素材可能仍包含 HTTP 地址。只有你的实
 
 ## HarmonyOS 配置
 
-HarmonyOS 必须使用 Flutter OHOS 分支。Android/iOS 仍可使用普通 Flutter；插件把
-`OhosView` 放在独立入口中，避免鸿蒙专属类型影响普通 Flutter 编译。
+HarmonyOS 构建仍须使用 Flutter OHOS 分支。平台判断使用
+`flutter_platform_utils` 的 `PlatformUtils.isOhos`，核心包没有直接引用
+`TargetPlatform.ohos`；Android/iOS 可继续使用标准 Flutter。插件把 `OhosView`
+放在独立入口中，避免鸿蒙专属类型影响标准 Flutter 编译。
 
 宿主工程根目录 `.ohpmrc` 加入官方仓库：
 
@@ -191,10 +282,11 @@ HarmonyOS 必须使用 Flutter OHOS 分支。Android/iOS 仍可使用普通 Flut
 registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/repository/byted-ohpm/
 ```
 
-插件已引入 `@csj/openadsdk 7.5.3`、快手 `ksadsdk 3.0.6`、优量汇
-`@gdt/gdt-union-sdk 1.2.0`，以及匹配的 `@csj/adapter_ks 3.0.6-6` 和
-`@csj/adapter_gdt 1.2.0-2`。优量汇核心 SDK 随插件以本地 HAR 提供，其余依赖从
-官方 OHPM 仓库解析。宿主
+核心包只引入 `@csj/openadsdk 7.5.3`。安装 `gromore_ads_kit_gdt` 后加入优量汇
+`@gdt/gdt-union-sdk 1.2.0` 与 `@csj/adapter_gdt 1.2.0-2`；安装
+`gromore_ads_kit_ks` 后加入快手 `ksadsdk 3.0.6` 与
+`@csj/adapter_ks 3.0.6-6`。百度和 Sigmob 当前没有本插件可验证的鸿蒙依赖，
+对应扩展包不声明 OHOS 平台。宿主
 `build-profile.json5` 对应 product 需要：
 
 ```json5
@@ -210,7 +302,8 @@ registry=https://ohpm.openharmony.cn/ohpm/,https://artifact.bytedance.com/reposi
 `APPROXIMATELY_LOCATION`、`LOCATION`、`APP_TRACKING_CONSENT` 等敏感权限，
 必须由宿主按真实用途、隐私政策和用户授权自行声明。
 
-HarmonyOS App 使用鸿蒙入口，并在 `runApp` 前注册平台视图：
+HarmonyOS 使用 Banner、信息流或 Draw 等 PlatformView 广告时，需要使用鸿蒙入口，
+并在 `runApp` 前注册平台视图：
 
 ```dart
 import 'package:gromore_ads_kit/gromore_ads_kit_ohos.dart';
@@ -221,8 +314,12 @@ void main() {
 }
 ```
 
-默认带穿山甲、快手和优量汇。优量汇 Adapter、腾讯底层 SDK 及
-`runtimeOnly.packages` 已全部放在插件内，宿主不需要再复制 HAR 或重复声明依赖。
+如果同一个仓库还要使用标准 Flutter 构建 Android/iOS，请只在鸿蒙专用入口（例如
+`main_ohos.dart`）中导入 `gromore_ads_kit_ohos.dart`。标准 Flutter 入口继续导入
+`gromore_ads_kit.dart`，不会解析鸿蒙分支独有的 `OhosView`。
+
+核心默认只带穿山甲。优量汇和快手的 SDK、Adapter 及 `runtimeOnly.packages`
+均放在各自扩展包内，宿主安装扩展后不需要再复制 HAR 或重复声明依赖。
 完整版本说明见 [`doc/HARMONYOS.md`](doc/HARMONYOS.md)。
 
 ## 初始化
@@ -230,13 +327,29 @@ void main() {
 必须先展示并取得用户对宿主隐私政策的选择，再初始化 SDK。`useMediation` 只能在
 第一次初始化时设置；只有初始化返回 `true` 后才能请求广告。
 
+三端通常使用不同的 App ID。下面使用 `flutter_platform_utils` 判断鸿蒙，不直接
+引用标准 Flutter 中不存在的 `TargetPlatform.ohos`。如果宿主代码也要直接导入
+`flutter_platform_utils`，请在宿主 `pubspec.yaml` 显式添加
+`flutter_platform_utils: ^1.0.0`，避免依赖传递关系触发分析警告。
+
 ```dart
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_platform_utils/flutter_platform_utils.dart';
 import 'package:gromore_ads_kit/gromore_ads_kit.dart';
 
 AdEventSubscription? adSubscription;
+
+String get gromoreAppId {
+  if (PlatformUtils.isOhos) {
+    return '你的鸿蒙 App ID';
+  }
+  if (Platform.isIOS) {
+    return '你的 iOS App ID';
+  }
+  return '你的 Android App ID';
+}
 
 Future<bool> initAdsAfterPrivacyConsent() async {
   // 这里应先等待你自己的隐私协议弹窗结果。
@@ -258,7 +371,7 @@ Future<bool> initAdsAfterPrivacyConsent() async {
   );
 
   return GromoreAdsKit.initAd(
-    '你的7位App ID',
+    gromoreAppId,
     useMediation: true,
     debugMode: kDebugMode,
     appName: '你的应用名称',
@@ -369,7 +482,7 @@ AdBannerWidget(
 Flutter 视图同时支持模板和自渲染广告。自渲染会使用插件内置默认布局，并按官网
 要求先注册展示、点击和 dislike 交互再展示。
 
-HarmonyOS `1.0.0` 使用官方 `loadFeedAd` 聚合混出链路。模板素材挂载 SDK
+HarmonyOS 实现使用官方 `loadFeedAd` 聚合混出链路。模板素材挂载 SDK
 `NodeController`，原生素材使用插件内置 ArkUI 布局，并注册展示、普通点击、
 创意点击和 dislike 计费事件。
 
@@ -395,7 +508,7 @@ if (adIds.isNotEmpty) {
 
 Flutter 视图同时支持模板和自渲染 Draw 广告，默认布局和交互注册由插件完成。
 
-HarmonyOS `1.0.0` 使用官方 `loadDrawAd` 聚合混出链路，同时支持模板和原生
+HarmonyOS 实现使用官方 `loadDrawAd` 聚合混出链路，同时支持模板和原生
 自渲染 Draw，并接入视频播放、暂停、续播和完成监听。
 
 ```dart
@@ -439,31 +552,27 @@ final info = await GromoreAdsKit.getAdLoadInfo(
 ```
 
 HarmonyOS SDK 当前公开接口没有提供与 Android/iOS 同等的逐 ADN 加载结果查询，
-因此 `1.0.0` 在鸿蒙端返回空列表；请使用 SDK Debug 日志和后台测试能力排查填充。
+因此当前版本在鸿蒙端返回空列表；请使用 SDK Debug 日志和后台测试能力排查填充。
 
 ## 官方预览测试工具
 
-测试工具要求 Android/iOS GroMore `7.2.0.0+`，并且必须在 SDK 初始化成功后调用。
+测试工具已拆到 `gromore_ads_kit_debug_tools`。它要求 Android/iOS GroMore
+`7.2.0.0+`，并且必须在 SDK 初始化成功后调用。
 还需要在 GroMore 后台开启全局广告预览模式和测试权限。
-HarmonyOS `1.0.0` 的 `launchTestTools()` 返回 `false`，不伪造未公开的工具入口。
+HarmonyOS 的 `launchTestTools()` 返回 `false`，不伪造未公开的工具入口。
 
 ### Android
 
-插件已经通过 `implementation` 直接携带与融合 SDK 配套的
-`com.pangle.cn:mediation-test-tools:7.7.1.6`，宿主不需要重复声明依赖。
-Android 原生层不限制构建类型，是否开放入口由宿主应用决定。
-
-这意味着 Android Release 产物也会包含测试工具。GroMore 当前官方文档仍将它标为
-测试阶段工具并注明不可带到线上，请在发布前自行评估包体和平台审核风险。
+扩展包使用 `debugImplementation` 引入
+`com.pangle.cn:mediation-test-tools:7.7.1.6`，因此 Android Release 变体不会打入
+测试工具 AAR。
 
 ### iOS
 
-插件已直接携带与当前 GroMore 版本匹配的 `BUAdTestMeasurement.xcframework` 和
-`BUAdTestMeasurement.bundle`，宿主不需要下载文件或修改 `Podfile`。Swift 入口仍由
-`#if DEBUG` 限制，Release 中调用会返回明确错误。
-
-这意味着 iOS Release 产物也会包含测试工具二进制和资源。该取舍用于保证插件使用者
-拿到依赖后即可调试；宿主仍应只在开发者页面开放入口，并自行评估包体和平台审核风险。
+iOS 扩展包携带匹配的 `BUAdTestMeasurement.xcframework` 和资源 Bundle，Swift
+入口由 `#if DEBUG` 限制。CocoaPods 没有与 Android `debugImplementation` 等价的
+Flutter 插件依赖方式，因此发布 iOS 前必须从 `pubspec.yaml` 移除整个
+`gromore_ads_kit_debug_tools` 包并重新执行 `flutter pub get` 和 `pod install`。
 
 业务侧仍要限制调用：
 
@@ -473,10 +582,12 @@ if (kDebugMode) {
 }
 ```
 
-推荐只在 `kDebugMode` 下调用，避免向普通用户暴露入口。
+推荐只在 `kDebugMode` 下调用。未安装扩展包时，`launchTestTools()` 会返回明确的
+`MissingPluginException`，不会让核心广告功能依赖测试工具。
 
 ## 版本升级
 
+- 1.x → 2.0.0：[`doc/MIGRATION_2_0_0.md`](doc/MIGRATION_2_0_0.md)
 - 0.3.0 → 1.0.0：[`doc/MIGRATION_1_0_0.md`](doc/MIGRATION_1_0_0.md)
 - 0.2.0 → 0.3.0：[`doc/MIGRATION_0_3_0.md`](doc/MIGRATION_0_3_0.md)
 - 0.1.0 → 0.2.0：[`doc/MIGRATION_0_2_0.md`](doc/MIGRATION_0_2_0.md)

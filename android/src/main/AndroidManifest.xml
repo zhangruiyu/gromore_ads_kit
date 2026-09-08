@@ -19,10 +19,7 @@
     <uses-permission android:name="${applicationId}.openadsdk.permission.TT_PANGOLIN" />
 
     <application>
-        <!--
-          GroMore 官方包仍要求显式声明穿山甲和优量汇的 FileProvider。
-          两个 SDK 的 AAR 没有自动合并这两项，缺少时官方测试工具会把 Manifest 标红。
-        -->
+        <!-- GroMore 核心包需要显式声明穿山甲 FileProvider。 -->
         <provider
             android:name="com.bytedance.sdk.openadsdk.TTFileProvider"
             android:authorities="${applicationId}.TTFileProvider"
@@ -31,16 +28,6 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/gromore_pangle_file_paths" />
-        </provider>
-
-        <provider
-            android:name="com.qq.e.comm.GDTFileProvider"
-            android:authorities="${applicationId}.gdt.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/gromore_gdt_file_paths" />
         </provider>
     </application>
 </manifest>

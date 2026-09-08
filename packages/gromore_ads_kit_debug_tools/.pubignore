@@ -1,0 +1,15 @@
+/.dart_tool/
+/build/
+/coverage/
+/pubspec.lock
+/.flutter-plugins-dependencies
+/.idea/
+*.iml
+*.log
+.DS_Store
+
+/android/.gradle/
+/ios/Pods/
+/ios/.symlinks/
+/ohos/build/
+/ohos/oh_modules/

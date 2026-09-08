@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.ImageView
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import com.bytedance.sdk.openadsdk.*
 import com.bytedance.sdk.openadsdk.mediation.IMediationManager
@@ -14,7 +13,6 @@ import com.bytedance.sdk.openadsdk.mediation.MediationPreloadRequestInfo
 import com.bytedance.sdk.openadsdk.mediation.ad.MediationAdSlot
 import com.bytedance.sdk.openadsdk.mediation.init.MediationConfig
 import com.bytedance.sdk.openadsdk.mediation.init.MediationPrivacyConfig
-import com.bumptech.glide.Glide
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
 import com.zhecent.gromore_ads_kit.common.AdConstants
@@ -29,12 +27,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.lang.reflect.Proxy
 import java.util.Locale
 
 /**
  * SDK管理器
- * 负责GroMore SDK的初始化、配置、预加载和测试工具管理
+ * 负责GroMore SDK的初始化、配置和预加载
  * 从主插件中分离出来，实现职责分离
  */
 class SdkManager(
@@ -846,74 +843,6 @@ class SdkManager(
     }
 
     /**
-     * 启动测试工具
-     * 从GromoreAdsKitPlugin迁移而来
-     */
-    fun launchTestTools(call: MethodCall, result: Result) {
-        try {
-            if (!isSdkInitialized || !TTAdSdk.isSdkReady()) {
-                val message = "GroMore SDK未初始化或尚未完成启动，请先调用 initAd"
-                logger.logAdError("测试工具", "启动失败", "", -1, message)
-                result.error(AdConstants.ErrorCodes.SDK_NOT_READY, message, null)
-                return
-            }
-
-            val errorMsg = checkActivityAvailable()
-            if (errorMsg != null) {
-                result.error(AdConstants.ErrorCodes.ACTIVITY_ERROR, errorMsg, null)
-                return
-            }
-
-            logger.logAdRequest("测试工具", "", emptyMap())
-            Log.d(TAG, "启动GroMore测试工具")
-            val activity = getCurrentActivity()
-            if (activity == null) {
-                val message = "无法获取当前Activity，测试工具无法启动"
-                logger.logAdError("测试工具", "启动失败", "", -1, message)
-                result.error(AdConstants.ErrorCodes.ACTIVITY_ERROR, message, null)
-                return
-            }
-
-            // 测试工具依赖由插件统一携带，宿主无需再配置。
-            val toolClass = Class.forName("com.bytedance.mtesttools.api.TTMediationTestTool")
-            val callbackClass = Class.forName("com.bytedance.mtesttools.api.TTMediationTestTool\$ImageCallBack")
-            val imageCallback = Proxy.newProxyInstance(
-                callbackClass.classLoader,
-                arrayOf(callbackClass)
-            ) { _, method, args ->
-                if (method.name == "loadImage") {
-                    val imageView = args?.getOrNull(0) as? ImageView
-                    val url = args?.getOrNull(1) as? String
-                    loadTestToolImage(imageView, url)
-                }
-                null
-            }
-            toolClass
-                .getMethod("launchTestTools", Context::class.java, callbackClass)
-                .invoke(null, activity, imageCallback)
-
-            Log.d(TAG, "GroMore测试工具已启动")
-            eventHelper.sendAdEvent("test_tools_launched", "", emptyMap())
-            result.success(true)
-
-        } catch (e: Throwable) {
-            Log.e(TAG, "启动测试工具失败", e)
-            val reason = when (e) {
-                is ClassNotFoundException, is NoClassDefFoundError ->
-                    "未找到GroMore测试工具依赖，请检查 mediation-test-tools 依赖是否解析成功"
-                else -> e.message ?: "未知异常"
-            }
-            logger.logAdError("测试工具", "启动失败", "", -1, reason)
-            eventHelper.sendAdEvent(
-                "test_tools_failed",
-                "",
-                mapOf("reason" to reason)
-            )
-            result.error(AdConstants.ErrorCodes.SHOW_ERROR, "启动测试工具失败: $reason", null)
-        }
-    }
-
-    /**
      * 权限申请（Android特有）
      */
     fun requestPermissionIfNecessary(call: MethodCall, result: Result) {
@@ -994,21 +923,6 @@ class SdkManager(
                     override fun isProgrammaticRecommend(): Boolean = !limitProgrammatic
                 }
             }
-        }
-    }
-
-    private fun loadTestToolImage(imageView: ImageView?, url: String?) {
-        Log.d(TAG, "测试工具请求加载图片: $url")
-        try {
-            val activity = getCurrentActivity()
-            if (imageView != null && !url.isNullOrEmpty() && activity != null) {
-                Glide.with(activity)
-                    .load(url)
-                    .into(imageView)
-                Log.d(TAG, "图片加载成功: $url")
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "测试工具图片加载异常: ${e.message}")
         }
     }
 

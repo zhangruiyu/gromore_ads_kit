@@ -1,0 +1,28 @@
+name: gromore_ads_kit_all
+description: GroMore 广告聚合全家桶，统一接入优量汇、百度、Sigmob 和快手可选适配包。
+version: 2.0.0
+homepage: https://github.com/zhangruiyu/gromore_ads_kit
+repository: https://github.com/zhangruiyu/gromore_ads_kit/tree/main/packages/gromore_ads_kit_all
+issue_tracker: https://github.com/zhangruiyu/gromore_ads_kit/issues
+
+topics:
+  - ads
+  - gromore
+  - mediation
+  - flutter
+
+environment:
+  sdk: ^3.11.4
+  flutter: '>=3.41.6'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit_baidu: ^1.0.0
+  gromore_ads_kit_gdt: ^1.0.0
+  gromore_ads_kit_ks: ^1.0.0
+  gromore_ads_kit_sigmob: ^1.0.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
