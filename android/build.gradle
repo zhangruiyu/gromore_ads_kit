@@ -21,11 +21,15 @@ allprojects {
     }
 }
 
-// AGP 8 不允许 Android Library 直接依赖本地 AAR，所以把 GroMore、测试工具和 ADN
-// 依赖都放进插件自带的 Maven 目录。宿主无需再配置字节跳动远程仓库。
+// GroMore 核心、测试工具和 Adapter 直接从字节跳动官方 Maven 下载。
+// 百度、Sigmob、快手的指定原生 SDK 仍使用插件随附版本，避免与 Adapter 版本不匹配。
+def pangleRepository = uri("https://artifact.bytedance.com/repository/pangle")
 def bundledAdnRepository = uri("$projectDir/maven")
 rootProject.allprojects {
     repositories {
+        maven {
+            url pangleRepository
+        }
         maven {
             url bundledAdnRepository
         }
@@ -63,7 +67,7 @@ android {
         implementation 'com.squareup.okhttp3:okhttp:3.12.1'
         implementation "com.pangle.cn:mediation-sdk:7.7.1.6"
 
-        // 插件直接携带 GroMore 官方测试工具，宿主无需再单独声明依赖。
+        // GroMore 官方测试工具通过字节跳动 Maven 引入，宿主无需再单独声明依赖。
         implementation 'com.pangle.cn:mediation-test-tools:7.7.1.6'
         // 测试工具的 BottomDialog 使用 statusBarBackground，插件独立校验资源时也需要它。
         implementation 'androidx.coordinatorlayout:coordinatorlayout:1.0.0'

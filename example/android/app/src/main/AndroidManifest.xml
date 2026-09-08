@@ -4,7 +4,8 @@
         android:label="gromore_ads_kit_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        tools:replace="android:label">
+        android:allowBackup="false"
+        tools:replace="android:allowBackup,android:label">
         <activity
             android:name=".MainActivity"
             android:exported="true"

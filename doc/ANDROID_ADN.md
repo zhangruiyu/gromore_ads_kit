@@ -3,8 +3,9 @@
 GroMore 的聚合配置和 Android 依赖是两件事。后台启用一个 ADN 后，最终 APK
 还必须同时包含该 ADN 的原生 SDK 和与它匹配的 GroMore Adapter。
 
-当前 GroMore SDK、官方测试工具和下列 Adapter 都已放进插件自身的
-`android/maven`，宿主不需要配置字节跳动 Maven 仓库。
+当前 GroMore SDK、官方测试工具和下列 Adapter 都由插件通过字节跳动官方 Maven
+仓库引入，宿主不需要再写这些依赖。插件只为没有可靠远程坐标的百度、Sigmob、
+快手指定版本原生 SDK 保留本地 Maven 文件。
 
 ## 优量汇
 
@@ -95,9 +96,9 @@ Gradle 插件应用到宿主 App，因此基础插件不再保留这项无效依
 ## Maven 坐标和版本检测
 
 Android 的 GroMore SDK、测试工具和各 ADN Adapter 必须来自同一个版本通道。
-本插件使用从 `com.pangle.cn` 正式 Maven 通道取得并内置的官方二进制。不要把其中一项改成
-`com.pangle_beta.cn`。GroMore `7.7.1.6` 的正式与 Beta 融合 SDK、测试工具经文件
-校验内容相同，因此只切换 Maven group 不会改变运行时检测结果。
+本插件直接使用 `com.pangle.cn` 正式 Maven 通道。不要把其中一项改成
+`com.pangle_beta.cn`。GroMore `7.7.1.6` 的正式 Maven 二进制与后台生成包经文件
+校验内容相同，因此改为远程依赖不会改变运行时代码。
 
 2026-09-03 从 GroMore 后台实时生成的 Android `7.7.1.6` 官方包仍指定 GDT
 `4.680.1550` / Adapter `4.680.1550.1`、Sigmob `4.25.14` / Adapter

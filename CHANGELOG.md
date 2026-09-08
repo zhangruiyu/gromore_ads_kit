@@ -5,8 +5,8 @@
 * HarmonyOS 内置快手 `ksadsdk 3.0.6` 和匹配的 GroMore Adapter
   `@csj/adapter_ks 3.0.6-6`，全部通过官方 OHPM 仓库远程依赖。
 * Android 将 `mediation-test-tools:7.7.1.6` 改为插件内置依赖，宿主不再重复配置。
-* Android 将 GroMore、测试工具和四家 ADN Adapter 一并放进插件本地 Maven，宿主
-  不再需要配置字节跳动 Maven 仓库。
+* Android 的 GroMore、测试工具和四家 ADN Adapter 改为从字节跳动官方 Maven
+  远程引入，移除插件中重复的 AAR/POM；插件会自动为宿主注册该仓库。
 * Android GroMore SDK、测试工具和 ADN Adapter 统一使用 `com.pangle.cn` 正式 Maven
   坐标，与 GroMore 官方 Android 下载包保持一致。
 * Android 内置 GroMore `7.7.1.6` 官方包配套的百度 SDK `9.4503`，修复只有

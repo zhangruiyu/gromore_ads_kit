@@ -14,8 +14,7 @@
 - 原生 SDK 文件：`android/maven/com/kuaishou/local/kssdk-ad/5.3.20.1/kssdk-ad-5.3.20.1.aar`
 - 原生 SDK SHA-256：`807bcb5b221258826e6f02ff5557616117767f45b8aa7ee4c31fdfec3586c9a1`
 - GroMore Adapter：`mediation-ks-adapter 5.3.20.1.1`
-- Adapter 文件：`android/maven/com/pangle/cn/mediation-ks-adapter/5.3.20.1.1/mediation-ks-adapter-5.3.20.1.1.aar`
-- Adapter SHA-256：`f0e27b41df5485084d78c6e997d3bd92d582b5c5334e6c62f98bedecd3e9c27c`
+- Adapter 来源：字节跳动正式 Maven `com.pangle.cn:mediation-ks-adapter:5.3.20.1.1`
 - 获取来源：穿山甲后台生成的 GroMore Android `7.7.1.6` 官方完整包
 
 上述二进制继续受各自平台的许可条款约束。

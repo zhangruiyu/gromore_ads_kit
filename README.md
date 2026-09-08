@@ -44,13 +44,14 @@ dependencies:
 
 ### Maven 依赖
 
-插件已经把 GroMore `7.7.1.6`、官方测试工具和当前配套 ADN Adapter 放进自身的
-本地 Maven 目录，并自动注册给宿主 Android 工程。使用者不需要在
-`settings.gradle` 或项目级 `build.gradle` 添加字节跳动 Maven 仓库，也不需要
+插件通过字节跳动官方 Maven 仓库引入 GroMore `7.7.1.6`、官方测试工具和当前配套
+ADN Adapter，并自动把仓库注册给宿主 Android 工程。使用者不需要在
+`settings.gradle` 或项目级 `build.gradle` 重复添加字节跳动 Maven 仓库，也不需要
 重复引入 `okhttp:3.12.1`。
 
-如果以后更换 GroMore 或 Adapter 版本，需要同时替换插件 `android/maven` 里的
-AAR/POM 和 `android/build.gradle` 中的坐标，避免编译坐标与实际二进制不一致。
+如果以后更换 GroMore 或 Adapter 版本，只需要更新 `android/build.gradle` 中的远程
+坐标。百度、Sigmob、快手的原生 SDK 仍来自插件 `android/maven`，升级这些 SDK 时
+需要同时替换本地 AAR/POM，并确保与 Adapter 版本匹配。
 
 ### 第三方 ADN
 
@@ -101,7 +102,8 @@ Flutter 插件 module 中没有应用到宿主 App，不能解决运行时 Adapt
     xmlns:tools="http://schemas.android.com/tools">
     <application
         android:label="你的应用名称"
-        tools:replace="android:label" />
+        android:allowBackup="false"
+        tools:replace="android:allowBackup,android:label" />
 </manifest>
 ```
 
