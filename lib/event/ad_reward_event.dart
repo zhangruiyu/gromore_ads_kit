@@ -52,8 +52,12 @@ class AdRewardEvent extends AdEvent {
         _rewardAsInt(map['rewardAmount']) ??
         _rewardAsInt(extra['rewardAmount']);
 
+    // Android、鸿蒙使用 verified，iOS 原生回调使用 verify。
     final verified =
-        _rewardAsBool(map['verified']) || _rewardAsBool(extra['verified']);
+        _rewardAsBool(map['verified']) ||
+        _rewardAsBool(extra['verified']) ||
+        _rewardAsBool(map['verify']) ||
+        _rewardAsBool(extra['verify']);
 
     return AdRewardEvent(
       action: base.action,
