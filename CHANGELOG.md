@@ -1,6 +1,20 @@
-## Unreleased
+## 2.0.2
 
-* 计划发布 `2.0.0`：核心包只携带 GroMore/穿山甲，优量汇、百度、Sigmob、快手
+* 修复 iOS 滑动关闭激励广告后，Flutter 滚动或侧滑返回可能卡住的问题。
+  使用独立原生页面承载广告，避免广告内部未消费的触摸进入隐藏的 Flutter 页面，
+  并在承载页退出后发送关闭事件。调用方无需接入手势恢复逻辑。
+* 激励广告承载页使用透明的覆盖全屏展示，保留下层业务页面，避免关闭广告时短暂露出黑底。
+
+## 2.0.1
+
+* 修复 iOS 激励广告奖励验证结果的解析，兼容原生回调中的 `verify` 字段，
+  避免已验证的奖励被误判为未验证。
+* 保持 Android、HarmonyOS 的 `verified` 字段兼容，支持顶层和 `extra` 中的
+  布尔、数字及字符串验证结果，并补充回归测试。
+
+## 2.0.0
+
+* 核心包只携带 GroMore/穿山甲，优量汇、百度、Sigmob、快手
   分别拆到 `gromore_ads_kit_gdt`、`gromore_ads_kit_baidu`、
   `gromore_ads_kit_sigmob`、`gromore_ads_kit_ks`，避免宿主被迫集成所有 ADN。
 * 新增 `gromore_ads_kit_all` 全家桶；只在确实需要四家 ADN 时使用。

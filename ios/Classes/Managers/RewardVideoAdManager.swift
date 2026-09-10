@@ -19,6 +19,9 @@ class RewardVideoAdManager: NSObject, AdManagerProtocol {
     private var currentPosId: String = ""
     private var isLoading = false
     private var isLoaded = false
+    private var isClosing = false
+    private weak var presentingViewController: UIViewController?
+    private var adHostViewController: RewardAdHostViewController?
 
     // 激励视频参数 - 移除所有默认值，只保存明确传递的参数
     private var currentUserId: String? = nil
@@ -70,7 +73,7 @@ class RewardVideoAdManager: NSObject, AdManagerProtocol {
         }
 
         // 检查是否正在加载
-        if isLoading {
+        if isLoading || isClosing {
             logger.logWarning("激励视频广告正在加载中，无法重复请求")
             result(createFlutterError(code: AdConstants.ErrorCodes.frequentRequest, message: "广告正在加载中"))
             return
@@ -140,14 +143,32 @@ class RewardVideoAdManager: NSObject, AdManagerProtocol {
 
         let showBlock = { [weak self] in
             guard let self = self else { return }
-            let showResult = self.currentRewardVideoAd?.show(fromRootViewController: rootViewController) ?? false
-            if showResult {
-                self.isLoaded = false
-                result(true)
-            } else {
-                self.logger.logAdError(AdConstants.AdType.rewardVideo, action: "展示", posId: posId, errorCode: -1, errorMessage: "展示失败")
-                self.resetState(clearRequest: false)
-                result(self.createFlutterError(code: AdConstants.ErrorCodes.showError, message: "激励视频广告展示失败"))
+            guard rootViewController.presentedViewController == nil else {
+                result(self.createFlutterError(code: AdConstants.ErrorCodes.showError, message: "当前页面正在展示其他原生页面"))
+                return
+            }
+            self.presentingViewController = rootViewController
+            // 广告由独立的原生页面承载，未消费的触摸不会再传到 FlutterViewController。
+            let host = RewardAdHostViewController()
+            // 保留下层页面，避免广告先退场、承载页后移除时露出黑底。
+            // 透明只影响显示，承载页仍正常接收并截住触摸。
+            host.modalPresentationStyle = .overFullScreen
+            host.view.backgroundColor = .clear
+            host.view.isOpaque = false
+            self.adHostViewController = host
+            rootViewController.present(host, animated: false) { [weak self, weak host] in
+                guard let self = self, let host = host else { return }
+                let showResult = self.currentRewardVideoAd?.show(fromRootViewController: host) ?? false
+                if showResult {
+                    self.isLoaded = false
+                    result(true)
+                } else {
+                    self.logger.logAdError(AdConstants.AdType.rewardVideo, action: "展示", posId: posId, errorCode: -1, errorMessage: "展示失败")
+                    self.dismissAdHost {
+                        self.resetState(clearRequest: false)
+                        result(self.createFlutterError(code: AdConstants.ErrorCodes.showError, message: "激励视频广告展示失败"))
+                    }
+                }
             }
         }
 
@@ -288,11 +309,31 @@ class RewardVideoAdManager: NSObject, AdManagerProtocol {
         return nil
     }
 
+    private func dismissAdHost(completion: @escaping () -> Void) {
+        guard let host = adHostViewController else {
+            completion()
+            return
+        }
+        adHostViewController = nil
+        if host.presentingViewController != nil {
+            host.dismiss(animated: false, completion: completion)
+        } else {
+            completion()
+        }
+    }
+
     private func resetState(clearRequest: Bool) {
+        // 失败、销毁也要移除插件自己的承载页。
+        if let host = adHostViewController {
+            adHostViewController = nil
+            host.dismiss(animated: false)
+        }
         currentRewardVideoAd = nil
         currentLoadResult = nil
         isLoading = false
         isLoaded = false
+        isClosing = false
+        presentingViewController = nil
         if clearRequest {
             currentPosId = ""
             currentUserId = nil
@@ -469,11 +510,46 @@ extension RewardVideoAdManager: BUNativeExpressRewardedVideoAdDelegate {
      * 激励视频广告关闭
      */
     func nativeExpressRewardedVideoAdDidClose(_ rewardedVideoAd: BUNativeExpressRewardedVideoAd) {
-        logger.logAdEvent(AdConstants.Events.rewardVideoClosed, posId: currentPosId)
-        eventHelper.sendRewardVideoEvent(AdConstants.Events.rewardVideoClosed, posId: currentPosId)
+        // 先退出 SDK 的回调栈，让 SDK 有机会启动 dismiss；广告对象保留到退场完成。
+        DispatchQueue.main.async { [weak self, rewardedVideoAd] in
+            guard let self = self,
+                  self.currentRewardVideoAd === rewardedVideoAd,
+                  !self.isClosing else { return }
+            self.isClosing = true
+            let posId = self.currentPosId
+            let presenter = self.presentingViewController
 
-        // 重置加载状态，需要重新加载
-        resetState(clearRequest: true)
+            let finish = { [weak self, weak presenter, rewardedVideoAd] in
+                // 转场完成回调也先返回 UIKit，再释放广告和通知 Flutter 刷新页面。
+                DispatchQueue.main.async {
+                    guard let self = self,
+                          self.currentRewardVideoAd === rewardedVideoAd else { return }
+                    self.dismissAdHost {
+                        let window = presenter?.viewIfLoaded?.window
+                        let presented = presenter?.presentedViewController
+                        let hostState: [String: Any] = [
+                            "hostVisible": window != nil,
+                            "hostKeyWindow": window?.isKeyWindow ?? false,
+                            "hostSceneActive": window?.windowScene?.activationState == .foregroundActive,
+                            "presentedController": presented.map { String(describing: type(of: $0)) } ?? "none"
+                        ]
+                        self.logger.logAdEvent(AdConstants.Events.rewardVideoClosed, posId: posId, extra: hostState)
+                        // 重置加载状态，需要重新加载
+                        self.resetState(clearRequest: true)
+                        self.eventHelper.sendRewardVideoEvent(AdConstants.Events.rewardVideoClosed, posId: posId, extra: hostState)
+                    }
+                }
+            }
+
+            let adPresenter = self.adHostViewController ?? presenter
+            let coordinator = adPresenter?.presentedViewController?.transitionCoordinator
+                ?? adPresenter?.transitionCoordinator
+            if let coordinator = coordinator,
+               coordinator.animate(alongsideTransition: nil, completion: { _ in finish() }) {
+                return
+            }
+            finish()
+        }
     }
 
     /**
@@ -537,4 +613,12 @@ extension RewardVideoAdManager: BUNativeExpressRewardedVideoAdDelegate {
 
         eventHelper.sendRewardVideoEvent(AdConstants.Events.rewardVideoRewardFail, posId: currentPosId, extra: failInfo)
     }
+}
+
+/// 承接广告内部没有消费的触摸，避免这些事件沿响应链进入 Flutter 页面。
+private final class RewardAdHostViewController: UIViewController {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {}
 }

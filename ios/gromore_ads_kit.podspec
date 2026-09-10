@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'gromore_ads_kit'
-  s.version          = '2.0.0'
+  s.version          = '2.0.2'
   s.summary          = 'Flutter GroMore 广告插件的 iOS 实现'
   s.description      = <<-DESC
   基于穿山甲 GroMore SDK 的 Flutter 广告插件，支持开屏、插屏、

@@ -14,7 +14,7 @@ Sigmob、快手和 GroMore 官方测试工具均拆成独立扩展包，业务 A
 
 ## 当前版本
 
-- 核心插件 `2.0.0`
+- 核心插件 `2.0.2`
 - Flutter `>=3.41.6`；Android/iOS 使用 FVM Flutter `3.41.6` 验证，
   HarmonyOS 使用 FVM Flutter `3.41.10-ohos-0.0.2-beta` 验证
 - Dart `^3.11.4`
@@ -60,7 +60,7 @@ Sigmob、快手和 GroMore 官方测试工具均拆成独立扩展包，业务 A
 
 ```yaml
 dependencies:
-  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit: ^2.0.2
 ```
 
 按实际需要添加 ADN 扩展。下面的示例会接入优量汇和 Sigmob，不会把百度和快手
@@ -68,7 +68,7 @@ dependencies:
 
 ```yaml
 dependencies:
-  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit: ^2.0.2
   gromore_ads_kit_gdt: ^1.0.0     # 优量汇
   gromore_ads_kit_sigmob: ^1.0.0  # Sigmob
 ```
@@ -77,7 +77,7 @@ dependencies:
 
 ```yaml
 dependencies:
-  gromore_ads_kit: ^2.0.0
+  gromore_ads_kit: ^2.0.2
   gromore_ads_kit_baidu: ^1.0.0   # 百度
   gromore_ads_kit_ks: ^1.0.0      # 快手
 ```
@@ -112,7 +112,7 @@ flutter pub get
 ```
 
 iOS 若没有在后续 Flutter 构建中自动安装 Pod，可在 `ios` 目录手动执行
-`pod install`。各扩展包发布到 pub.dev 后使用上述版本号；在本仓库联调时可临时
+`pod install`。各扩展包已发布到 pub.dev，可使用上述版本号；在本仓库联调时可临时
 改成对应 `packages/` 下的 path 依赖。
 
 ### 3. 保持后台与客户端一致
