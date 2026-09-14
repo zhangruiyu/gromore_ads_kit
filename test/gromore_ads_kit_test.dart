@@ -16,6 +16,7 @@ class MockGromoreAdsKitPlatform
   Map<String, dynamic>? lastInitParams;
   Map<String, dynamic>? lastSplashParams;
   Map<String, dynamic>? lastBannerParams;
+  Map<String, dynamic>? lastRewardParams;
 
   @override
   Stream<Map<String, dynamic>> get adEventStream => _controller.stream;
@@ -65,8 +66,10 @@ class MockGromoreAdsKitPlatform
   Future<bool> showInterstitialAd(String posId) => Future.value(true);
 
   @override
-  Future<bool> loadRewardVideoAd(Map<String, dynamic> params) =>
-      Future.value(true);
+  Future<bool> loadRewardVideoAd(Map<String, dynamic> params) {
+    lastRewardParams = params;
+    return Future.value(true);
+  }
 
   @override
   Future<bool> showRewardVideoAd(String posId) => Future.value(true);
@@ -148,6 +151,20 @@ void main() {
     );
   });
 
+  test('reward load enables ADN error details by default in Debug', () async {
+    final fakePlatform = MockGromoreAdsKitPlatform();
+    GromoreAdsKitPlatform.instance = fakePlatform;
+
+    await GromoreAdsKit.loadRewardVideoAd('reward_pos');
+    expect(fakePlatform.lastRewardParams?['showAdnLoadErrorDetail'], isTrue);
+
+    await GromoreAdsKit.loadRewardVideoAd(
+      'reward_pos',
+      showAdnLoadErrorDetail: false,
+    );
+    expect(fakePlatform.lastRewardParams?['showAdnLoadErrorDetail'], isFalse);
+  });
+
   test('privacy config only serializes explicitly supplied values', () {
     const privacy = AdPrivacyConfig(
       canUseLocation: false,
@@ -164,6 +181,39 @@ void main() {
       'canUseOaid': true,
       'customIdfa': 'idfa_from_host',
     });
+  });
+
+  test('初始化透传宿主 OAID 并保留禁止 SDK 自行读取的开关', () async {
+    final fakePlatform = MockGromoreAdsKitPlatform();
+    GromoreAdsKitPlatform.instance = fakePlatform;
+    addTearDown(() => GromoreAdsKitPlatform.instance = initialPlatform);
+
+    await GromoreAdsKit.initAd(
+      'android_app_id',
+      useMediation: true,
+      debugMode: true,
+      privacy: const AdPrivacyConfig(
+        canUseOaid: false,
+        oaid: 'test_oaid_from_host',
+        canUsePhoneState: false,
+        canUseAndroidId: false,
+      ),
+    );
+    expect(fakePlatform.lastInitParams?['privacy'], {
+      'canUseOaid': false,
+      'oaid': 'test_oaid_from_host',
+      'canUsePhoneState': false,
+      'canUseAndroidId': false,
+    });
+
+    // 未授权场景不能把 false 丢掉或补上设备 ID。
+    await GromoreAdsKit.initAd(
+      'android_app_id',
+      useMediation: true,
+      debugMode: true,
+      privacy: const AdPrivacyConfig(canUseOaid: false),
+    );
+    expect(fakePlatform.lastInitParams?['privacy'], {'canUseOaid': false});
   });
 
   test('initAd forwards HarmonyOS initialization fields', () async {

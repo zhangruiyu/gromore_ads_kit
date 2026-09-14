@@ -42,7 +42,8 @@ class RewardVideoAdManager(
         val volume: Float?,
         val bidNotify: Boolean?,
         val scenarioId: String?,
-        val useSurfaceView: Boolean?
+        val useSurfaceView: Boolean?,
+        val showAdnLoadErrorDetail: Boolean
     )
 
     private var currentRequest: RewardRequest? = null
@@ -231,6 +232,7 @@ class RewardVideoAdManager(
         val bidNotify = call.argument<Boolean>("bidNotify")
         val scenarioId = call.argument<String>("scenarioId")?.takeIf { it.isNotBlank() }
         val useSurfaceView = call.argument<Boolean>("useSurfaceView")
+        val showAdnLoadErrorDetail = call.argument<Boolean>("showAdnLoadErrorDetail") == true
 
         return RewardRequest(
             posId = posId,
@@ -244,7 +246,8 @@ class RewardVideoAdManager(
             volume = volume,
             bidNotify = bidNotify,
             scenarioId = scenarioId,
-            useSurfaceView = useSurfaceView
+            useSurfaceView = useSurfaceView,
+            showAdnLoadErrorDetail = showAdnLoadErrorDetail
         )
     }
 
@@ -262,6 +265,7 @@ class RewardVideoAdManager(
         request.bidNotify?.let { params["bidNotify"] = it }
         request.scenarioId?.let { params["scenarioId"] = it }
         request.useSurfaceView?.let { params["useSurfaceView"] = it }
+        params["showAdnLoadErrorDetail"] = request.showAdnLoadErrorDetail
         logger.logAdRequest(AdConstants.AD_TYPE_REWARD_VIDEO, request.posId, params)
     }
 
@@ -288,6 +292,9 @@ class RewardVideoAdManager(
         request.scenarioId?.let { mediationSlotBuilder.setScenarioId(it) }
         request.customData?.let {
             mediationSlotBuilder.setExtraObject(MediationConstant.CUSTOM_DATA_KEY_GROMORE_EXTRA, it)
+        }
+        if (request.showAdnLoadErrorDetail) {
+            mediationSlotBuilder.setExtraObject("show_adn_load_error_detail", true)
         }
 
         return adSlotBuilder

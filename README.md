@@ -399,6 +399,39 @@ void disposeAds() {
 }
 ```
 
+### Android：Sigmob 提示缺少设备 ID / OAID
+
+`canUseOaid: true` 只是允许 SDK 自行读取，不代表设备一定能提供 OAID。
+如果日志出现 `MdidSdkHelper` / `OAID 读取类创建失败`，需要检查 OAID 获取依赖，
+或者复用宿主已有的 OAID 获取库，将真实 OAID 在 **GroMore 初始化前**传入：
+
+```dart
+// 必须先取得相应用户授权，并等待宿主已有 OAID 库返回真实值。
+// oaidFromHost 表示上述获取结果；不可用时为 null，不是写死的设备 ID。
+final String? oaid = oaidFromHost;
+final privacy = AdPrivacyConfig(
+  oaid: oaid,
+  canUseOaid: oaid == null,
+  canUsePhoneState: false,
+  canUseAndroidId: false,
+);
+// 在现有 GromoreAdsKit.initAd(...) 中使用 privacy，其他隐私选项继续按宿主授权设置。
+```
+
+- Sigmob 官方规定：`canUseOaid: false` 时才使用宿主传入的 OAID；这里是禁止
+  **SDK 自行采集**，不是禁止使用已获授权的传入值。
+- 示例中获取失败时保留 SDK 自行读取；如果用户不允许 OAID，应同时设置
+  `canUseOaid: false` 和 `oaid: null`，不要因加载失败而绕过用户选择。
+- 某些 OAID 库首次调用只启动异步获取，需要等待回调或短暂、有限次数重读；
+  不要无限等待，也不要在初始化后反复初始化 SDK 来补值。
+- 不要传空字符串、全零值，也不要用 IMEI、Android ID 或随机 UUID 代替 OAID。
+  日志只记录获取成功与否，不输出完整 OAID。
+- 本插件负责透传，不捆绑额外 OAID 库或宿主专属证书。接入方自行选择获取方案，
+  不需要为了传入 OAID 额外开放定位、电话、应用列表等权限。
+
+此配置也用于同一 SDK 初始化后打开的官方测试工具。补齐 OAID 不保证一定填充，
+还需要重新检查 Sigmob 请求结果。[Sigmob 官方隐私设置说明](https://doc.sigmob.com/sigmob/11140/)。
+
 ## 常用广告
 
 通用预加载只支持激励视频、插屏/全屏视频和信息流。GroMore 官方不支持 Banner、
@@ -541,6 +574,14 @@ for (final item in info) {
   );
 }
 ```
+
+Android 激励视频加载返回 `20005` 时，表示聚合位下所有代码位都请求失败，
+不是某一家 ADN 的具体错误。插件在 Debug 包中会自动为激励视频请求打开
+`show_adn_load_error_detail`，`onError` 的 `message` 会尽量包含每家 ADN 的
+代码位、错误码和原因；Release 包默认关闭。如需显式控制，可在调用
+`loadRewardVideoAd` 时传 `showAdnLoadErrorDetail: true/false`。该参数只影响
+**App 通过插件发起的 Android 请求**，不会改变 GroMore 官方测试工具的请求或
+后台填充结果。诊断日志可能含代码位 ID，正式包如需打开请自行控制日志上报范围。
 
 Feed/Draw 需要在广告 ID 绑定 Widget 之前传入 `adId`：
 

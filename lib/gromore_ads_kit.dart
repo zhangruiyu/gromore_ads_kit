@@ -482,6 +482,9 @@ class GromoreAdsKit {
   }
 
   /// 加载激励视频广告
+  ///
+  /// Android Debug 包默认开启逐家 ADN 的加载失败详情；正式包默认关闭。
+  /// 可通过 [showAdnLoadErrorDetail] 覆盖默认值。加载失败时，详情会随错误回调返回。
   static Future<bool> loadRewardVideoAd(
     String posId, {
     int? orientation,
@@ -494,6 +497,7 @@ class GromoreAdsKit {
     bool? bidNotify,
     String? scenarioId,
     bool? useSurfaceView,
+    bool? showAdnLoadErrorDetail,
     @Deprecated(
       'GroMore 7.2+ removed reward play-again; this value is ignored.',
     )
@@ -511,6 +515,7 @@ class GromoreAdsKit {
       'bidNotify': bidNotify,
       'scenarioId': scenarioId,
       'useSurfaceView': useSurfaceView,
+      'showAdnLoadErrorDetail': showAdnLoadErrorDetail ?? kDebugMode,
     });
     return _platform.loadRewardVideoAd(params);
   }

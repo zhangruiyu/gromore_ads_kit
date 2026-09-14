@@ -75,10 +75,13 @@ class AdPrivacyConfig {
   /// 是否允许写外部存储。仅 Android。
   final bool? canUseWriteExternal;
 
-  /// 是否允许 GroMore 获取 OAID。仅 Android。
+  /// 是否允许 SDK 自行获取 OAID。仅 Android。
+  /// Sigmob 使用宿主提供的 [oaid] 时需要设为 false。
   final bool? canUseOaid;
 
-  /// 自定义 OAID。仅 Android。
+  /// 宿主在取得相应用户授权后获取的真实 OAID。仅 Android。
+  /// 在初始化前提供；接入 Sigmob 时配合 canUseOaid: false 使用。
+  /// 不要传空值、全零值或用 Android ID、随机 UUID 代替。
   final String? oaid;
 
   /// 是否允许读取 Android ID。仅 Android。
